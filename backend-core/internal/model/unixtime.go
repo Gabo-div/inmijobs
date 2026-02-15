@@ -13,11 +13,16 @@ func (ut *UnixTime) Scan(value interface{}) error {
 		return nil
 	}
 
-	if v, ok := value.(int64); ok {
+	switch v := value.(type) {
+	case time.Time:
+		*ut = UnixTime(v)
+		return nil
+	case int64:
 		*ut = UnixTime(time.Unix(v, 0))
 		return nil
+	default:
+		return fmt.Errorf("cannot scan type %T into UnixTime", value)
 	}
-	return fmt.Errorf("cannot scan type %T into UnixTime", value)
 }
 
 func (ut UnixTime) Value() (driver.Value, error) {

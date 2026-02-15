@@ -11,6 +11,7 @@ type User struct {
 
 	Sessions []Session `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Accounts []Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Profile  *Profile  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Session struct {

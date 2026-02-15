@@ -16,13 +16,13 @@ export function AuthStatus() {
       <CardHeader>
         <CardTitle className="text-white">Better-Auth Status</CardTitle>
         <CardDescription className="text-zinc-400">
-          {isPending ? "Checking authentication..." : session ? "You are signed in" : "You are not signed in"}
+          {isPending ? "Checking authentication..." : session?.user ? "You are signed in" : "You are not signed in"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isPending ? (
           <div className="text-zinc-400">Loading...</div>
-        ) : session ? (
+        ) : session?.user ? (
           <div className="space-y-4">
             <div className="p-4 bg-zinc-800 rounded-lg">
               <h3 className="font-semibold text-white mb-2">User Info</h3>
