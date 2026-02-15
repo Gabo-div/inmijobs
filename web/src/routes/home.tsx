@@ -14,7 +14,7 @@ function RouteComponent() {
 
       <Header />
 
-      <div className=" w-full grid grid-cols-2 md:grid-cols-[0.5fr_2fr_0.5fr] gap-4">
+      <div className=" w-full grid grid-cols-2 md:grid-cols-[2fr_6fr_auto] gap-4">
         <Aside1 />
 
         <Main />
