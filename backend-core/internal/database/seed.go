@@ -49,6 +49,7 @@ func Seed(db *gorm.DB) {
 	} else if result.RowsAffected > 0 {
 		slog.Info("[Database] Seeded test profile")
 	}
+
 }
 
 func toPtr(s string) *string {

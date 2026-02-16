@@ -43,7 +43,7 @@ func (h *PostHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedPost, err := h.svc.UpdatePost(r.Context(), Postid, input)
+	updatedPost, err := h.svc.UpdatePost(r.Context(), uint(Postid), input)
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, "Failed to create post: "+err.Error())
 		return
@@ -54,29 +54,42 @@ func (h *PostHandler) EditPost(w http.ResponseWriter, r *http.Request) {
 
 func (p PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
-	// user, err := p.authService.UserFromHeader(r.Context(), r.Header)
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
-	// 	return
-	// }
-
 	var req dto.CreatePostRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	req.UserID = 123 //Should be ---> &user.ID
+	req.UserID = "user_test_123"
 
-	err := p.svc.CreatePost(r.Context(), req)
+	createdPost, err := p.svc.CreatePost(r.Context(), req)
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, "Failed to create post")
 		return
 	}
 
-	utils.RespondJSON(w, http.StatusOK, dto.CreatePostRequest{
-		UserID:    req.UserID,
-		CompanyID: req.CompanyID,
-		Content:   req.Content,
-	})
+	utils.RespondJSON(w, http.StatusOK, createdPost)
+}
+
+func (h *PostHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+
+	idParam := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "ID de post inválido")
+		return
+	}
+
+	post, err := h.svc.GetByID(r.Context(), uint(id))
+	if err != nil {
+
+		if err.Error() == "el post solicitado no existe" {
+			utils.RespondError(w, http.StatusNotFound, err.Error())
+		} else {
+			utils.RespondError(w, http.StatusInternalServerError, "Error interno al obtener el post")
+		}
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, post)
 }

@@ -34,9 +34,9 @@ func main() {
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
 
-	// commentRepository := repository.NewCommentRepository(*db)
-	// commentService := core.NewCommentService(*commentRepository)
-	// commentHandler := api.NewCommentHandler(*commentService, *authService)
+	commentRepository := repository.NewCommentRepository(db)
+	commentService := core.NewCommentService(*commentRepository)
+	commentHandler := api.NewCommentHandler(*commentService, *authService)
 
 	postRepository := repository.NewPostRepository(db)
 	postService := core.NewPostService(postRepository)
@@ -51,8 +51,19 @@ func main() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/ping", pingHandler.Ping)
 		r.Put("/profiles/me", profileHandler.UpdateProfile)
-		r.Post("/post", postHandler.CreatePost)
-		r.Put("/post/:id", postHandler.EditPost)
+
+		r.Route("/posts", func(r chi.Router) {
+			r.Post("/", postHandler.CreatePost)
+			r.Put("/{id}", postHandler.EditPost)
+			r.Get("/{id}", postHandler.GetByID)
+		})
+
+		r.Route("/comments", func(r chi.Router) {
+			r.Post("/", commentHandler.Create)
+			r.Get("/", commentHandler.List)
+			r.Delete("/{id}", commentHandler.Delete)
+			r.Put("/{id}", commentHandler.Update)
+		})
 
 	})
 

@@ -10,15 +10,15 @@ import (
 )
 
 type CommentRepository struct {
-	db gorm.DB
+	db *gorm.DB
 }
 
-func NewCommentRepository(db gorm.DB) *CommentRepository {
+func NewCommentRepository(db *gorm.DB) *CommentRepository {
 	return &CommentRepository{db: db}
 }
 
 func (r CommentRepository) Create(ctx context.Context, comment model.Comment) (dto.CommentResponse, error) {
-	if err := gorm.G[model.Comment](&r.db).Create(ctx, &comment); err != nil {
+	if err := r.db.WithContext(ctx).Create(&comment).Error; err != nil {
 		return dto.CommentResponse{}, fmt.Errorf("repository: create comment: %w", err)
 	}
 
@@ -37,7 +37,7 @@ func (r CommentRepository) Create(ctx context.Context, comment model.Comment) (d
 func (r CommentRepository) Update(ctx context.Context, CommentID string, comment dto.UpdateCommentRequest) (model.Comment, error) {
 
 	var existing model.Comment
-	if _, err := gorm.G[model.Comment](&r.db).Where("id = ?", CommentID).First(ctx); err != nil {
+	if _, err := gorm.G[model.Comment](r.db).Where("id = ?", CommentID).First(ctx); err != nil {
 		return model.Comment{}, fmt.Errorf("repository: find comment before update: %w", err)
 	}
 
@@ -48,7 +48,7 @@ func (r CommentRepository) Update(ctx context.Context, CommentID string, comment
 		existing.Content = comment.Content
 	}
 
-	_, err := gorm.G[model.Comment](&r.db).Where("id = ?", CommentID).Updates(ctx, existing)
+	_, err := gorm.G[model.Comment](r.db).Where("id = ?", CommentID).Updates(ctx, existing)
 	if err != nil {
 		return model.Comment{}, fmt.Errorf("repository: update comment: %w", err)
 	}
@@ -57,7 +57,7 @@ func (r CommentRepository) Update(ctx context.Context, CommentID string, comment
 }
 
 func (r CommentRepository) Delete(ctx context.Context, id string) error {
-	_, err := gorm.G[model.Comment](&r.db).
+	_, err := gorm.G[model.Comment](r.db).
 		Where("id = ?", id).
 		Delete(ctx)
 
@@ -69,7 +69,7 @@ func (r CommentRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r CommentRepository) GetByID(ctx context.Context, id string) (model.Comment, error) {
-	comment, err := gorm.G[model.Comment](&r.db).Where("id = ?", id).First(ctx)
+	comment, err := gorm.G[model.Comment](r.db).Preload("Comment.User",nil).Preload("User",nil).Where("id = ?", id).First(ctx)
 	if err != nil {
 		return model.Comment{}, fmt.Errorf("repository: get comment by id: %w", err)
 	}
@@ -78,7 +78,7 @@ func (r CommentRepository) GetByID(ctx context.Context, id string) (model.Commen
 
 func (r CommentRepository) List(ctx context.Context, limit int) ([]model.Comment, error) {
 
-	comments, err := gorm.G[model.Comment](&r.db).
+	comments, err := gorm.G[model.Comment](r.db).
 		Order("created_at desc").
 		Limit(limit).
 		Find(ctx)

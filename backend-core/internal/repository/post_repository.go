@@ -8,48 +8,77 @@ import (
 )
 
 type PostRepo interface {
-	EditPost(ctx context.Context, postID int, p model.Post) (model.Post, error)
+	EditPost(ctx context.Context, postID uint, p model.Post) (model.Post, error)
 	CreatePost(ctx context.Context, post *model.Post) error
+	GetByID(ctx context.Context, id uint) (*model.Post, error)
 }
 
-type PostRepository struct {
+type postRepository struct {
 	db *gorm.DB
 }
 
 func NewPostRepository(db *gorm.DB) PostRepo {
-	return &PostRepository{db: db}
+	return &postRepository{db: db}
 }
 
-func (r *PostRepository) EditPost(ctx context.Context, postID int, p model.Post) (model.Post, error) {
+func (r *postRepository) GetByID(ctx context.Context, id uint) (*model.Post, error) {
+	var post model.Post
 
+    err := r.db.WithContext(ctx).
+        Preload("Images").
+        Preload("Company").
+        Preload("User").
+        Preload("Job").
+        Preload("Comments").Preload("Comments.User").
+        Preload("Interactions").
+        First(&post, id).Error
+    return &post, err
+}
+
+func (r *postRepository) EditPost(ctx context.Context, postID uint, p model.Post) (model.Post, error) {
 	var editedPost model.Post
 
-	if err := r.db.WithContext(ctx).Model(&editedPost).Where("id = ?", postID).Updates(&p).Error; err != nil {
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.First(&editedPost, postID).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&editedPost).Updates(p).Error; err != nil {
+			return err
+		}
+
+		if len(p.Images) > 0 {
+
+			if err := tx.Model(&editedPost).Association("Images").Replace(p.Images); err != nil {
+				return err
+			}
+		}
+
+		if len(p.Comments) > 0 {
+			if err := tx.Model(&editedPost).Association("Comments").Replace(p.Comments); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return model.Post{}, err
 	}
 
-	if len(p.Comments) > 0 {
-		r.db.Model(&editedPost).Association("Comments").Replace(p.Comments)
-	}
-	if len(p.Interactions) > 0 {
-		r.db.Model(&editedPost).Association("Interactions").Replace(p.Interactions)
-	}
-	if len(p.Images) > 0 {
-		r.db.Model(&editedPost).Association("Images").Replace(p.Images)
-	}
-
-	return editedPost, r.db.WithContext(ctx).
+	err = r.db.WithContext(ctx).
 		Preload("Comments").
 		Preload("Interactions").
 		Preload("Images").
 		First(&editedPost, postID).Error
 
+	return editedPost, err
 }
-
-func (r *PostRepository) CreatePost(ctx context.Context, post *model.Post) error {
-	err := gorm.G[model.Post](r.db).Create(ctx, post)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *postRepository) CreatePost(ctx context.Context, post *model.Post) error {
+	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
+        return err
+    }
+    return nil
 }

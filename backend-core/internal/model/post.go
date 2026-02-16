@@ -1,5 +1,11 @@
 package model
 
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type Rol string
 
 const (
@@ -9,47 +15,47 @@ const (
 )
 
 type Post struct {
-	ID           uint   `gorm:"primaryKey"`
+	ID           uint   `gorm:"primaryKey;autoIncrement"`
 	Title        string `gorm:"type:text;not null"`
 	Content      string `gorm:"type:text;not null"`
-	UserID       uint
-	User         User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" `
+	UserID       string   `gorm:"not null"`
+	User         User   `gorm:"foreignKey:UserID"`
 	JobID        *int
-	Job          Job `gorm:"foreignKey:JobID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Job          Job `gorm:"foreignKey:JobID"`
 	CompanyID    *int
-	Company      Company       `gorm:"foreignKey:CompanyID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	Comments     []Comment     `gorm:"foreignKey:PostID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Interactions []Interaction `gorm:"foreignKey:PostID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" `
-	Images       []Image       `gorm:"many2many:post_images;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CreatedAt    UnixTime      `gorm:"autoCreateTime;column:created_at"`
-	UpdatedAt    UnixTime      `gorm:"autoUpdateTime;column:updated_at"`
-	DeletedAt    *UnixTime     `gorm:"index;column:deleted_at"`
+	Company      Company        `gorm:"foreignKey:CompanyID"`
+	Comments     []Comment      `gorm:"foreignKey:PostID"`
+	Interactions []Interaction  `gorm:"foreignKey:PostID"`
+	Images       []Image        `gorm:"many2many:post_images;"`
+	CreatedAt    time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	UpdatedAt    time.Time      `gorm:"autoUpdateTime"` 
+	DeletedAt    gorm.DeletedAt `gorm:"index"`
 }
 
 type Job struct {
-	ID          uint    `gorm:"primaryKey"`
+	ID          int     `gorm:"primaryKey"`
 	Title       string  `gorm:"not null"`
 	Description string  `gorm:"not null"`
 	Status      string  `gorm:"not null"`
 	CompanyID   int     `gorm:"not null"`
-	Company     Company `gorm:"foreignKey:CompanyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	RecruiterID int     `gorm:"not null" json:"recruiter_id"`
-	Recruiter   User    `gorm:"foreignKey:RecruiterID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Company     Company `gorm:"foreignKey:CompanyID"`
+	RecruiterID string     `gorm:"not null" json:"recruiter_id"`
+	Recruiter   User    `gorm:"foreignKey:RecruiterID"`
 
-	Posts []Post `gorm:"foreignKey:JobID" json:"posts,omitempty"`
+	Posts []Post  `gorm:"foreignKey:JobID"`
 }
 
 type Company struct {
-	ID       uint   `gorm:"primaryKey"`
+	ID       int    `gorm:"primaryKey"`
 	Name     string `gorm:"not null"`
 	Location string `gorm:"not null"`
-	OwnerID  uint   `gorm:"index"`
+	OwnerID  string   `gorm:"index"`
 	Owner    User   `gorm:"foreignKey:OwnerID"`
 }
 
 type Employee struct {
-	ID        uint    `gorm:"primaryKey"`
-	UserID    int     `gorm:"not null" `
+	ID        int     `gorm:"primaryKey"`
+	UserID    string     `gorm:"not null" `
 	User      User    `gorm:"foreignKey:UserID"`
 	CompanyID int     `gorm:"not null"`
 	Company   Company `gorm:"foreignKey:CompanyID"`
@@ -57,31 +63,32 @@ type Employee struct {
 }
 
 type Interaction struct {
-	ID         uint     `gorm:"primaryKey"`
-	UserID     uint     `gorm:"not null"`
+	ID         int      `gorm:"primaryKey"`
+	UserID     string     `gorm:"not null"`
 	User       User     `gorm:"foreignKey:UserID"`
 	PostID     uint     `gorm:"not null"`
 	Post       Post     `gorm:"foreignKey:PostID"`
 	ReactionID int      `gorm:"not null"`
 	Reaction   Reaction `gorm:"foreignKey:ReactionID"`
-	CreatedAt  UnixTime `gorm:"not null;autoCreateTime"`
+	CreatedAt  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
 type Reaction struct {
-	ID      uint   `gorm:"primaryKey"`
+	ID      int    `gorm:"primaryKey"`
 	Name    string `gorm:"not null"`
 	IconURL string `gorm:"not null"`
 }
 
 type Image struct {
-	ID        uint     `gorm:"primaryKey"`
-	Name      string   `gorm:"not null"`
+	ID        int      `gorm:"primaryKey"`
+	Name      string   `gorm:"type:text"`
 	URL       string   `gorm:"not null"`
-	CreatedAt UnixTime `gorm:"not null;autoCreateTime"`
+	Caption   string   `gorm:"type:text" json:"caption"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
 type PostImage struct {
-	PostID    uint     `gorm:"primaryKey"`
+	PostID    int      `gorm:"primaryKey"`
 	ImageID   uint     `gorm:"primaryKey"`
-	CreatedAt UnixTime `gorm:"not null;autoCreateTime"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }

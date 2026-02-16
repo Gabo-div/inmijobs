@@ -12,7 +12,7 @@ type UpdateCommentRequest struct {
 }
 
 type CommentResponse struct {
-	ID        string `json:"id"`
+	ID        uint `json:"id"`
 	Message   string `json:"message"`
 	PostID    string `json:"postId"`
 	UserID    string `json:"userId"`

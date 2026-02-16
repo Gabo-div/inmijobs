@@ -1,7 +1,7 @@
 package model
 
 type Comment struct {
-	ID        string `gorm:"primaryKey"`
+	ID        uint `gorm:"primaryKey; autoIncrement"`
 	Content   string `gorm:"not null"`
 	PostID    string `gorm:"not null"`
 	CreatedAt int64  `gorm:"not null;autoCreateTime"`

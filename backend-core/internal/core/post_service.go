@@ -2,18 +2,21 @@ package core
 
 import (
 	"context"
+	"errors"
 
 	"log/slog"
 
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
+	"gorm.io/gorm"
 
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 )
 
 type PostService interface {
-	UpdatePost(ctx context.Context, postID int, input model.Post) (model.Post, error)
-	CreatePost(ctx context.Context, req dto.CreatePostRequest) error
+	UpdatePost(ctx context.Context, postID uint, input model.Post) (model.Post, error)
+	CreatePost(ctx context.Context, req dto.CreatePostRequest) (model.Post, error)
+	GetByID(ctx context.Context, id uint) (*model.Post, error)
 }
 
 type postService struct {
@@ -26,10 +29,10 @@ func NewPostService(repo repository.PostRepo) PostService {
 	}
 }
 
-func (s *postService) CreatePost(ctx context.Context, req dto.CreatePostRequest) error {
+func (s *postService) CreatePost(ctx context.Context, req dto.CreatePostRequest) (model.Post, error) {
 
 	post := model.Post{
-		// ID:        utils.NewID(),
+
 		Title:     req.Title,
 		UserID:    req.UserID,
 		JobID:     req.JobID,
@@ -41,21 +44,36 @@ func (s *postService) CreatePost(ctx context.Context, req dto.CreatePostRequest)
 
 	if err != nil {
 		slog.Error("[PostService][CreatePost] unable create post", "error", err)
-		return err
-	}
-	return nil
-}
-
-func (s *postService) UpdatePost(ctx context.Context, postID int, input model.Post) (model.Post, error) {
-
-	updatedPost, err := s.repo.EditPost(ctx, postID, input)
-	if err != nil {
-		slog.Error("[PostService][UpdatePost] unable to update post",
-			"post_id", postID,
-			"error", err,
-		)
 		return model.Post{}, err
 	}
+	return post, nil
+}
 
-	return updatedPost, nil
+func (s *postService) UpdatePost(ctx context.Context, postID uint, p model.Post) (model.Post, error) {
+
+	existingPost, err := s.repo.GetByID(ctx, postID)
+	if err != nil {
+		return model.Post{}, errors.New("post no encontrado")
+	}
+
+	p.UserID = existingPost.UserID
+	p.CreatedAt = existingPost.CreatedAt
+
+	return s.repo.EditPost(ctx, postID, p)
+}
+
+func (s *postService) GetByID(ctx context.Context, id uint) (*model.Post, error) {
+
+	post, err := s.repo.GetByID(ctx, id)
+
+	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("el post solicitado no existe")
+		}
+
+		return nil, err
+	}
+
+	return post, nil
 }
