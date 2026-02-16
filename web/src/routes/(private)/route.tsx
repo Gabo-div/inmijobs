@@ -14,11 +14,9 @@ export const Route = createFileRoute('/(private)')({
 
 function RouteComponent() {
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main>
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   )
 }

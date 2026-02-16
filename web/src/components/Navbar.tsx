@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth"
 export function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const navigate = useNavigate()
-  
+
   const { data: session } = authClient.useSession()
 
   const handleLogout = async () => {
@@ -21,19 +21,16 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-[#E5E7EB] bg-white/80 backdrop-blur-md px-4 md:px-8 h-16 flex items-center justify-between">
-      
-      {/* SECCIÓN IZQUIERDA: LOGO Y BUSCADOR */}
       <div className="flex items-center gap-6 flex-1">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-linear-to-br from-[#F97316] to-[#8B5CF6] rounded-xl shadow-lg flex items-center justify-center transform group-hover:scale-105 transition-all">
-            <span className="text-white font-bold text-xl">IJ</span>
+          <div className="inline-flex items-center justify-center relative size-10">
+            <img src="/imagotipo.png" className="w-20" />
           </div>
           <span className="text-xl font-bold hidden md:block bg-linear-to-r from-[#F97316] to-[#8B5CF6] bg-clip-text text-transparent">
             InmiJobs
           </span>
         </Link>
 
-        {/* Buscador */}
         <div className="relative max-w-md w-full hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
           <input
@@ -44,7 +41,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* SECCIÓN DERECHA: LINKS Y PERFIL */}
       <div className="flex items-center gap-2 md:gap-4">
         <nav className="flex items-center gap-1 md:gap-2 mr-2">
           <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#FFF3E6] text-[#6B7280] hover:text-[#F97316] text-sm font-semibold transition-all">
@@ -57,7 +53,6 @@ export function Navbar() {
           </Link>
         </nav>
 
-        {/* Perfil con Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -87,7 +82,7 @@ export function Navbar() {
                     <Settings className="h-4 w-4" />
                     Configuración de cuenta
                   </button>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold rounded-xl text-[#EF4444] hover:bg-[#FEF2F2] transition-colors text-left"
                   >
