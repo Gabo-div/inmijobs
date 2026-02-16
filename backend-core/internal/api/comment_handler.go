@@ -1,111 +1,122 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
-	"strconv"
 
-	// Verifica que esta ruta sea exactamente la de tu go.mod
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/core"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
-	"github.com/gin-gonic/gin"
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 type CommentHandler struct {
-	// Aquí es donde el compilador busca core.CommentService
-	service *core.CommentService
+	commentService core.CommentService
+	authService    core.AuthService
 }
 
-func NewCommentHandler(service *core.CommentService) *CommentHandler {
-	return &CommentHandler{service: service}
+func NewCommentHandler(cs core.CommentService, as core.AuthService) *CommentHandler {
+	return &CommentHandler{
+		commentService: cs,
+		authService:    as,
+	}
 }
 
-// Create maneja POST /comments
-func (h *CommentHandler) Create(c *gin.Context) {
-	// Extraer userID del contexto (inyectado por el middleware de Auth)
-	val, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "usuario no autenticado"})
-		return
-	}
-	userID := val.(uint)
+func (h *CommentHandler) Routes() http.Handler {
+	r := chi.NewRouter()
 
-	var req dto.CreateCommentReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "datos inválidos: " + err.Error()})
-		return
-	}
+	r.Get("/", h.List)
+	r.Get("/{id}", h.GetByID)
+	r.Post("/", h.Create)
+	r.Put("/{id}", h.Update)
+	r.Delete("/{id}", h.Delete)
 
-	comment, err := h.service.CreateComment(userID, req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, comment)
+	return r
 }
 
-// GetByPost maneja GET /posts/:postId/comments
-func (h *CommentHandler) GetByPost(c *gin.Context) {
-	postIDStr := c.Param("postId")
-	postID, err := strconv.ParseUint(postIDStr, 10, 32)
+func (h *CommentHandler) List(w http.ResponseWriter, r *http.Request) {
+	comments, err := h.commentService.ListComments(r.Context(), 100)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de post inválido"})
+		utils.RespondError(w, http.StatusInternalServerError, "unable to list comments: "+err.Error())
 		return
 	}
 
-	comments, err := h.service.GetCommentsByPost(uint(postID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, comments)
+	utils.RespondJSON(w, http.StatusOK, comments)
 }
 
-// Update maneja PUT /comments/:id
-func (h *CommentHandler) Update(c *gin.Context) {
-	val, _ := c.Get("userID")
-	userID := val.(uint)
+func (h *CommentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
 
-	commentIDStr := c.Param("id")
-	commentID, err := strconv.ParseUint(commentIDStr, 10, 32)
+	comment, err := h.commentService.GetCommentByID(r.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de comentario inválido"})
+		utils.RespondError(w, http.StatusNotFound, "comment not found: "+err.Error())
 		return
 	}
 
-	var req dto.UpdateCommentReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	comment, err := h.service.UpdateComment(userID, uint(commentID), req)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, comment)
+	utils.RespondJSON(w, http.StatusOK, comment)
 }
 
-// Delete maneja DELETE /comments/:id
-func (h *CommentHandler) Delete(c *gin.Context) {
-	val, _ := c.Get("userID")
-	userID := val.(uint)
+func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 
-	commentIDStr := c.Param("id")
-	commentID, err := strconv.ParseUint(commentIDStr, 10, 32)
+	user, err := h.authService.UserFromHeader(r.Context(), r.Header)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de comentario inválido"})
+		utils.RespondError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
 		return
 	}
 
-	err = h.service.DeleteComment(userID, uint(commentID))
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+	var comment dto.CreateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "invalid request body: "+err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "comentario eliminado exitosamente"})
+	comment.UserID = user.ID
+
+	created, err := h.commentService.CreateComment(r.Context(), comment)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "unable to create comment: "+err.Error())
+		return
+	}
+	utils.RespondJSON(w, http.StatusCreated, created)
+}
+
+func (h *CommentHandler) Update(w http.ResponseWriter, r *http.Request) {
+	commentID := chi.URLParam(r, "id")
+
+	_, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	var commentRequest dto.UpdateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&commentRequest); err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "invalid request body: "+err.Error())
+		return
+	}
+
+	updated, err := h.commentService.UpdateComment(r.Context(), commentID, commentRequest)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "unable to update comment: "+err.Error())
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, updated)
+}
+
+func (h *CommentHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	_, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	if err := h.commentService.DeleteComment(r.Context(), id); err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "unable to delete comment: "+err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

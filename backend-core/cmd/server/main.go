@@ -34,6 +34,13 @@ func main() {
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
 
+	// commentRepository := repository.NewCommentRepository(*db)
+	// commentService := core.NewCommentService(*commentRepository)
+	// commentHandler := api.NewCommentHandler(*commentService, *authService)
+
+	postRepository := repository.NewPostRepository(db)
+	postService := core.NewPostService(postRepository)
+	postHandler := api.NewPostHandler(postService)
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -44,6 +51,9 @@ func main() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/ping", pingHandler.Ping)
 		r.Put("/profiles/me", profileHandler.UpdateProfile)
+		r.Post("/post", postHandler.CreatePost)
+		r.Put("/post/:id", postHandler.EditPost)
+
 	})
 
 	port := ":8080"

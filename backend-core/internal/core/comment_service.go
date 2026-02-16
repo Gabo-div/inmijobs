@@ -1,52 +1,44 @@
 package core
 
 import (
-	"errors"
+	"context"
+
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
 )
 
 type CommentService struct {
-	repo repository.CommentRepository
+	commentRepository repository.CommentRepository
 }
 
-func NewCommentService(repo repository.CommentRepository) *CommentService {
-	return &CommentService{repo: repo}
+func NewCommentService(cr repository.CommentRepository) *CommentService {
+	return &CommentService{commentRepository: cr}
 }
 
-func (s *CommentService) CreateComment(userID uint, req dto.CreateCommentReq) (*model.Comment, error) {
-	newComment := &model.Comment{
-		Content: req.Content,
-		PostID:  req.PostID,
-		UserID:  userID,
-	}
-	return s.repo.Create(newComment)
+func (s CommentService) ListComments(ctx context.Context, limit int) ([]model.Comment, error) {
+	return s.commentRepository.List(ctx, limit)
 }
 
-func (s *CommentService) GetCommentsByPost(postID uint) ([]model.Comment, error) {
-	return s.repo.GetByPostID(postID)
+func (s CommentService) GetCommentByID(ctx context.Context, id string) (model.Comment, error) {
+	return s.commentRepository.GetByID(ctx, id)
 }
 
-func (s *CommentService) UpdateComment(userID uint, commentID uint, req dto.UpdateCommentReq) (*model.Comment, error) {
-	comment, err := s.repo.GetByID(commentID)
-	if err != nil {
-		return nil, err
+func (s CommentService) CreateComment(ctx context.Context, createCommentRequest dto.CreateCommentRequest) (dto.CommentResponse, error) {
+
+	commentModel := model.Comment{
+		Content: createCommentRequest.Content,
+		UserID:  createCommentRequest.UserID,
+		PostID:  createCommentRequest.PostID,
 	}
-	if comment.UserID != userID {
-		return nil, errors.New("no autorizado")
-	}
-	comment.Content = req.Content
-	return s.repo.Update(comment)
+	return s.commentRepository.Create(ctx, commentModel)
 }
 
-func (s *CommentService) DeleteComment(userID uint, commentID uint) error {
-	comment, err := s.repo.GetByID(commentID)
-	if err != nil {
-		return err
-	}
-	if comment.UserID != userID {
-		return errors.New("no autorizado")
-	}
-	return s.repo.Delete(commentID)
+func (s CommentService) UpdateComment(ctx context.Context, id string, updateCommentRequest dto.UpdateCommentRequest) (model.Comment, error) {
+
+	return s.commentRepository.Update(ctx, id, updateCommentRequest)
+}
+
+func (s CommentService) DeleteComment(ctx context.Context, id string) error {
+	return s.commentRepository.Delete(ctx, id)
 }
