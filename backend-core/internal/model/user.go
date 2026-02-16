@@ -1,6 +1,5 @@
 package model
 
-// Definimos los estados posibles para las conexiones
 type ConnectionStatus string
 
 const (
@@ -24,15 +23,14 @@ type User struct {
 }
 
 
-	// Relaciones para las conexiones (Self-referencing many-to-many)
-	// Estas permiten cargar las solicitudes enviadas y recibidas
+
 	ConnectionsSent     []Connection `gorm:"foreignKey:RequesterID"`
 	ConnectionsReceived []Connection `gorm:"foreignKey:ReceiverID"`
 }
 
 type Connection struct {
     ID          uint             `gorm:"primaryKey" json:"id"`
-    RequesterID string           `gorm:"not null;index" json:"requester_id"` // Añade etiquetas json
+    RequesterID string           `gorm:"not null;index" json:"requester_id"` 
     Requester   User             `gorm:"foreignKey:RequesterID" json:"-"`
     ReceiverID  string           `gorm:"not null;index" json:"receiver_id"`
     Receiver    User             `gorm:"foreignKey:ReceiverID" json:"-"`
@@ -60,7 +58,7 @@ type Account struct {
 	AccessToken           *string
 	RefreshToken          *string
 	IDToken               *string
-	AccessTokenExpiresAt  *UnixTime `gorm:"type:integer"` // Puntero para soportar NULL
+	AccessTokenExpiresAt  *UnixTime `gorm:"type:integer"`
 	RefreshTokenExpiresAt *UnixTime `gorm:"type:integer"`
 	Scope                 *string
 	Password              *string
