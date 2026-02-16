@@ -20,9 +20,8 @@ func (h *ConnectionHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Connection handler is alive!"))
 }
 
-// ... aquí siguen tus otros métodos (CreateConnection, UpdateConnection, etc.)
 
-// [POST /connections]
+
 func (h *ConnectionHandler) CreateConnection(w http.ResponseWriter, r *http.Request) {
 	var conn model.Connection
 	if err := json.NewDecoder(r.Body).Decode(&conn); err != nil {
@@ -36,7 +35,6 @@ func (h *ConnectionHandler) CreateConnection(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusCreated)
 }
 
-// [PUT /connections/:id]
 func (h *ConnectionHandler) UpdateConnection(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	var body struct {
@@ -51,7 +49,6 @@ func (h *ConnectionHandler) UpdateConnection(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-// [DELETE /connections/:id]
 func (h *ConnectionHandler) DeleteConnection(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.repo.Delete(id); err != nil {
