@@ -69,8 +69,8 @@ type Company struct {
 }
 
 type Employee struct {
-	ID     uint `gorm:"primaryKey" json:"id"`
-	UserID int  `gorm:"not null" json:"user_id"`
+	ID     uint  `gorm:"primaryKey" json:"id"`
+	UserID int   `gorm:"not null" json:"user_id"`
 	User   *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 
 	CompanyID int      `gorm:"not null" json:"company_id"`
