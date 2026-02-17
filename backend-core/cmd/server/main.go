@@ -29,7 +29,7 @@ func main() {
 	authRepository := repository.NewAuthRepository(*db)
 	profileRepository := repository.NewProfileRepository(*db)
 	jobRepository := repository.NewJobRepository(*db)
-	connRepository := repository.NewConnectionRepository(db)
+	connRepository := repository.NewConnectionRepository(*db)
 
 
 	authService := core.NewAuthService(*authRepository)
@@ -40,7 +40,7 @@ func main() {
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
 	jobHandler := api.NewJobHandler(*jobService, *authService)
-	connHandler := api.NewConnectionHandler(connRepository)
+	connHandler := api.NewConnectionHandler(connRepository, *authService)
 	
 
 	r := chi.NewRouter()
@@ -69,16 +69,17 @@ func main() {
 		r.Route("/companies", func(r chi.Router) {
 			r.Put("/{id}", jobHandler.UpdateCompany)
 		})
-	})
-        
-    r.Route("/connections", func(r chi.Router) {
-        r.Get("/test", connHandler.Ping)         
-        r.Post("/", connHandler.CreateConnection)      
-        r.Put("/{id}", connHandler.UpdateConnection)   
-        r.Delete("/{id}", connHandler.DeleteConnection)
-        })
+
+        r.Route("/connections", func(r chi.Router) {
+        	r.Get("/test", connHandler.Ping)         
+        	r.Post("/", connHandler.CreateConnection)      
+        	r.Put("/{id}", connHandler.UpdateConnection)   
+        	r.Delete("/{id}", connHandler.DeleteConnection)
+
     })
 
+	})
+	
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	log.Printf("Server starting on port %s", port)
 	if err := http.ListenAndServe(port, r); err != nil {

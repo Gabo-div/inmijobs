@@ -1,59 +1,90 @@
 package api
 
 import (
-	"encoding/json"
-	"net/http"
-	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
-	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
-	"github.com/go-chi/chi/v5"
+    "encoding/json"
+    "net/http"
+
+    "github.com/Gabo-div/bingo/inmijobs/backend-core/internal/core"
+    "github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
+    "github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
+    "github.com/Gabo-div/bingo/inmijobs/backend-core/internal/utils"
+    "github.com/go-chi/chi/v5"
 )
 
 type ConnectionHandler struct {
-	repo *repository.ConnectionRepository
+    repo        *repository.ConnectionRepository
+    authService core.AuthService
 }
 
-func NewConnectionHandler(repo *repository.ConnectionRepository) *ConnectionHandler {
-	return &ConnectionHandler{repo: repo}
+func NewConnectionHandler(repo *repository.ConnectionRepository, auth core.AuthService) *ConnectionHandler {
+    return &ConnectionHandler{
+        repo:        repo,
+        authService: auth,
+    }
 }
-
-func (h *ConnectionHandler) Ping(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Connection handler is alive!"))
-}
-
-
 
 func (h *ConnectionHandler) CreateConnection(w http.ResponseWriter, r *http.Request) {
-	var conn model.Connection
-	if err := json.NewDecoder(r.Body).Decode(&conn); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
-	if err := h.repo.Create(&conn); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+
+    user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+    if err != nil {
+        utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+        return
+    }
+
+    var conn model.Connection
+    if err := json.NewDecoder(r.Body).Decode(&conn); err != nil {
+        utils.RespondError(w, http.StatusBadRequest, "Invalid request body")
+        return
+    }
+
+    conn.UserID = user.ID 
+
+    if err := h.repo.Create(&conn); err != nil {
+        utils.RespondError(w, http.StatusInternalServerError, "Failed to create connection")
+        return
+    }
+    utils.RespondJSON(w, http.StatusCreated, conn)
 }
 
 func (h *ConnectionHandler) UpdateConnection(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	var body struct {
-		Status model.ConnectionStatus `json:"status"`
-	}
-	json.NewDecoder(r.Body).Decode(&body)
+    user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+    if err != nil {
+        utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+        return
+    }
 
-	if err := h.repo.UpdateStatus(id, body.Status); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+    id := chi.URLParam(r, "id")
+    var body struct {
+        Status model.ConnectionStatus `json:"status"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+        utils.RespondError(w, http.StatusBadRequest, "Invalid request body")
+        return
+    }
+
+    if err := h.repo.UpdateStatus(id, user.ID, body.Status); err != nil {
+        if err == gorm.ErrRecordNotFound {
+            utils.RespondError(w, http.StatusNotFound, "Connection not found or unauthorized")
+            return
+        }
+        utils.RespondError(w, http.StatusInternalServerError, "Failed to update")
+        return
+    }
+    utils.RespondJSON(w, http.StatusOK, map[string]string{"status": string(body.Status)})
 }
 
 func (h *ConnectionHandler) DeleteConnection(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if err := h.repo.Delete(id); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+    _, err := h.authService.UserFromHeader(r.Context(), r.Header)
+    if err != nil {
+        utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+        return
+    }
+
+    id := chi.URLParam(r, "id")
+    if err := h.repo.Delete(id); err != nil {
+        utils.RespondError(w, http.StatusInternalServerError, "Failed to delete connection")
+        return
+    }
+    utils.RespondJSON(w, http.StatusNoContent, nil)
 }
