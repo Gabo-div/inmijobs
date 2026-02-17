@@ -63,13 +63,14 @@ type Employee struct {
 }
 
 type Interaction struct {
-	ID         int      `gorm:"primaryKey"`
-	UserID     string     `gorm:"not null"`
-	User       User     `gorm:"foreignKey:UserID"`
-	PostID     uint     `gorm:"not null"`
-	Post       Post     `gorm:"foreignKey:PostID"`
-	ReactionID int      `gorm:"not null"`
-	Reaction   Reaction `gorm:"foreignKey:ReactionID"`
+	ID         int       `gorm:"primaryKey"`
+	UserID     string    `gorm:"not null"`
+	User       User      `gorm:"foreignKey:UserID"`
+	PostID     *uint     // Modificado: Puntero (*) para permitir nulos
+	Post       Post      `gorm:"foreignKey:PostID"`
+	CommentID  *int      // NUEVO: Puntero para tu tarea de comentarios
+	ReactionID int       `gorm:"not null"`
+	Reaction   Reaction  `gorm:"foreignKey:ReactionID"`
 	CreatedAt  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
