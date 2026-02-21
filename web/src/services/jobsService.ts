@@ -1,11 +1,11 @@
 import { Service } from "./service";
-import type { Job, UpdateJobRequest } from "@/models/jobs";
+import type { Job, JobFilters, PaginatedJobs, UpdateJobRequest } from "@/models/jobs";
 import type { APIResponse } from "@/models/APIResponse";
 import type { CompanyApplication, CreateApplicationRequest, CreateApplicationResponse } from "@/models/applications";
 
 class JobsService extends Service {
-  getJobs(): Promise<APIResponse<Array<Job>>> {
-    return this.client.get("").json();
+  getJobs(filters: JobFilters): Promise<APIResponse<PaginatedJobs>> {
+    return this.client.get("", { searchParams: filters }).json();
   }
 
   getJobById(id: string): Promise<APIResponse<Job>> {

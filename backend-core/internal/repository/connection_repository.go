@@ -1,8 +1,6 @@
 package repository
 
 import (
-    "context"
-
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 	"gorm.io/gorm"
 )
@@ -21,32 +19,33 @@ func (r *ConnectionRepository) Create(conn *model.Connection) error {
 
 func (r *ConnectionRepository) UpdateStatus(id string, userID string, status model.ConnectionStatus) error {
 
-    result := r.db.Model(&model.Connection{}).
-        Where("id = ? AND user_id = ?", id, userID).
-        Update("status", status)
+	result := r.db.Model(&model.Connection{}).
+		Where("id = ? AND user_id = ?", id, userID).
+		Update("status", status)
 
-    if result.Error != nil {
-        return result.Error
-    }
+	if result.Error != nil {
+		return result.Error
+	}
 
-    if result.RowsAffected == 0 {
-        return gorm.ErrRecordNotFound
-    }
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
 
-    return nil
+	return nil
 }
 
-func (r *ConnectionRepository) Delete(id string, userID string) error {
-    result := r.db.Where("id = ? AND user_id = ?", id, userID).
-        Delete(&model.Connection{})
+func (r *ConnectionRepository) Delete(id string) error {
+	result := r.db.Where("id = ?", id).
+		Delete(&model.Connection{})
 
-    if result.Error != nil {
-        return result.Error
-    }
+	if result.Error != nil {
+		return result.Error
+	}
 
-    if result.RowsAffected == 0 {
-        return gorm.ErrRecordNotFound
-    }
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
 
-    return nil
+	return nil
 }
+

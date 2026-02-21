@@ -108,6 +108,7 @@ func Seed(db *gorm.DB) {
 				EmploymentType: gofakeit.RandomString(employmentTypes),
 				IsActive:       gofakeit.Bool(),
 				CompanyID:      company.ID,
+				RecruiterID:    company.UserID, // Assign the company's UserID as the RecruiterID
 			}
 
 			result := db.Clauses(clause.OnConflict{

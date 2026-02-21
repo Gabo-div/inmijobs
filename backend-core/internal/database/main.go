@@ -43,7 +43,7 @@ func NewDatabase() (*gorm.DB, error) {
 		&model.Job{},
 		&model.Reaction{},
 		&model.Interaction{},
-		&model.Reaction{},    
+		&model.Reaction{},
 		&model.Interaction{},
 		&model.Application{},
 		&model.Connection{},

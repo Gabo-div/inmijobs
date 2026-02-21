@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Fatal Error connecting to database: %v", err)
 	}
-	
+
 	authRepository := repository.NewAuthRepository(*db)
 	profileRepository := repository.NewProfileRepository(*db)
 	jobRepository := repository.NewJobRepository(*db)
@@ -41,7 +42,6 @@ func main() {
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
 	jobHandler := api.NewJobHandler(*jobService, *authService)
 	connHandler := api.NewConnectionHandler(connRepository, *authService)
-	
 
 	commentRepository := repository.NewCommentRepository(db)
 	commentService := core.NewCommentService(*commentRepository)
@@ -51,10 +51,9 @@ func main() {
 	postService := core.NewPostService(postRepository)
 	postHandler := api.NewPostHandler(postService)
 	interactionRepository := repository.NewInteractionRepository(db)
-    interactionService := core.NewInteractionService(interactionRepository)
-    interactionHandler := api.NewInteractionHandler(interactionService)
+	interactionService := core.NewInteractionService(interactionRepository)
+	interactionHandler := api.NewInteractionHandler(interactionService)
 	r := chi.NewRouter()
-	
 
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
@@ -70,7 +69,7 @@ func main() {
 			r.Put("/{id}", postHandler.EditPost)
 			r.Get("/{id}", postHandler.GetByID)
 			r.Post("/{id}/reactions", interactionHandler.TogglePostReaction)
-            r.Get("/{id}/reactions", interactionHandler.GetPostReactions)
+			r.Get("/{id}/reactions", interactionHandler.GetPostReactions)
 		})
 
 		r.Route("/comments", func(r chi.Router) {
@@ -100,18 +99,17 @@ func main() {
 			r.Put("/{id}", jobHandler.UpdateCompany)
 		})
 
-    r.Route("/connections", func(r chi.Router) {
-        	r.Get("/test", connHandler.Ping)         
-        	r.Post("/", connHandler.CreateConnection)      
-        	r.Put("/{id}", connHandler.UpdateConnection)   
-        	r.Delete("/{id}", connHandler.DeleteConnection)
-
-    })
+		r.Route("/connections", func(r chi.Router) {
+			r.Post("/", connHandler.CreateConnection)
+			r.Put("/{id}", connHandler.UpdateConnection)
+			r.Delete("/{id}", connHandler.DeleteConnection)
+		})
 	})
-	
+
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	log.Printf("Server starting on port %s", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
+	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
+

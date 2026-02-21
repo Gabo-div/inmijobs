@@ -20,7 +20,11 @@ type Company struct {
 	Locations []Location `gorm:"foreignKey:CompanyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Posts     []Post     `gorm:"foreignKey:CompanyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Jobs      []Job      `gorm:"foreignKey:CompanyID"`
+
+	Location string `gorm:"not null"`
+	OwnerID  string `gorm:"index"`
 }
+
 type Location struct {
 	ID      string `gorm:"primaryKey"`
 	Address string `gorm:"not null"`
@@ -29,11 +33,4 @@ type Location struct {
 	IsHQ    bool   `gorm:"default:false"`
 
 	CompanyID string `gorm:"not null;index"`
-}
-
-type Post struct {
-	ID        string `gorm:"primaryKey"`
-	Content   string `gorm:"type:text;not null"`
-	CompanyID string `gorm:"not null;index"`
-	CreatedAt int64  `gorm:"autoCreateTime"`
 }

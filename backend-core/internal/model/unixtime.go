@@ -30,9 +30,10 @@ func (ut UnixTime) Value() (driver.Value, error) {
 	if t.IsZero() {
 		return nil, nil
 	}
-	return t.Unix(), nil
+	return t.UnixMilli(), nil
 }
 
 func (ut UnixTime) Time() time.Time {
 	return time.Time(ut)
 }
+

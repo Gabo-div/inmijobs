@@ -9,35 +9,30 @@ const (
 )
 
 type User struct {
-	ID            string   `gorm:"primaryKey"`
-	Name          string   `gorm:"not null"`
-	Email         string   `gorm:"not null;uniqueIndex"`
-	EmailVerified bool     `gorm:"not null;default:false"`
+	ID            string `gorm:"primaryKey"`
+	Name          string `gorm:"not null"`
+	Email         string `gorm:"not null;uniqueIndex"`
+	EmailVerified bool   `gorm:"not null;default:false"`
 	Image         *string
 	CreatedAt     UnixTime `gorm:"not null;autoCreateTime"`
 	UpdatedAt     UnixTime `gorm:"not null;autoUpdateTime"`
 
-	Sessions []Session `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Accounts []Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Profile  *Profile  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-
+	Sessions            []Session    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Accounts            []Account    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Profile             *Profile     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ConnectionsSent     []Connection `gorm:"foreignKey:RequesterID"`
 	ConnectionsReceived []Connection `gorm:"foreignKey:ReceiverID"`
 }
 
 type Connection struct {
-    ID          string  `gorm:"primaryKey" json:"id"`
-    RequesterID string  `gorm:"not null;index" json:"requester_id"`
-    Requester   User    `gorm:"foreignKey:RequesterID" json:"-"`
-    ReceiverID  string  `gorm:"not null;index" json:"receiver_id"`
-    Receiver    User             `gorm:"foreignKey:ReceiverID" json:"-"`
-    Status      ConnectionStatus `gorm:"type:text;default:'pending'" json:"status"`
-    CreatedAt   UnixTime         `gorm:"not null;autoCreateTime" json:"created_at"`
-    UpdatedAt   UnixTime         `gorm:"not null;autoUpdateTime" json:"updated_at"`
-	  Sessions  []Session `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	  Accounts  []Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	  Companies []Company `gorm:"foreignKey:UserID"`
-	  Profile   *Profile  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID          string           `gorm:"primaryKey" json:"id"`
+	RequesterID string           `gorm:"not null;index" json:"requester_id"`
+	Requester   User             `gorm:"foreignKey:RequesterID" json:"-"`
+	ReceiverID  string           `gorm:"not null;index" json:"receiver_id"`
+	Receiver    User             `gorm:"foreignKey:ReceiverID" json:"-"`
+	Status      ConnectionStatus `gorm:"type:text;default:'pending'" json:"status"`
+	CreatedAt   UnixTime         `gorm:"not null;autoCreateTime" json:"created_at"`
+	UpdatedAt   UnixTime         `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
 type Session struct {

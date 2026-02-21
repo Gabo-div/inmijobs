@@ -27,3 +27,35 @@ export const updateJobRequestSchema = z.object({
 });
 
 export type UpdateJobRequest = z.infer<typeof updateJobRequestSchema>;
+
+export enum EmploymentType {
+  FULL_TIME = "full-time",
+  PART_TIME = "part-time",
+  CONTRACT = "contract",
+  TEMPORARY = "temporary",
+  INTERN = "intern",
+  VOLUNTEER = "volunteer",
+  OTHER = "other",
+}
+
+export const jobFiltersSchema = z.object({
+  page: z.coerce.number(),
+  pageSize: z.coerce.number(),
+  location: z.string().optional(),
+  employmentType: z.enum(EmploymentType).optional(),
+  minSalary: z.number().optional(),
+  maxSalary: z.number().optional(),
+  sector: z.string().optional(),
+}).partial();
+
+export type JobFilters = z.infer<typeof jobFiltersSchema>;
+
+export const paginatedJobsSchema = z.object({
+  jobs: z.array(jobSchema),
+  total: z.coerce.number(),
+  page: z.coerce.number(),
+  limit: z.coerce.number(),
+  totalPages: z.coerce.number(),
+});
+
+export type PaginatedJobs = z.infer<typeof paginatedJobsSchema>;

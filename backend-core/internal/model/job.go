@@ -16,6 +16,12 @@ type Job struct {
 	Company   Company `gorm:"foreignKey:CompanyID"`
 
 	Applications []Application `gorm:"foreignKey:JobID"`
+
+	Status      string `gorm:"not null"`
+	RecruiterID string `gorm:"not null" json:"recruiter_id"`
+	Recruiter   User   `gorm:"foreignKey:RecruiterID"`
+
+	Posts []Post `gorm:"foreignKey:JobID"`
 }
 
 type Application struct {
