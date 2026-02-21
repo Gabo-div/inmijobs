@@ -14,6 +14,7 @@ import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as privateIndexRouteImport } from './routes/(private)/index'
 import { Route as privateProfileRouteImport } from './routes/(private)/profile'
+import { Route as privateJobsRouteImport } from './routes/(private)/jobs'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSigninRouteImport } from './routes/(auth)/signin'
 
@@ -38,6 +39,9 @@ const privateIndexRoute = privateIndexRouteImport.update({
 const privateProfileRoute = privateProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+const privateJobsRoute = privateJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
   getParentRoute: () => privateRouteRoute,
 } as any)
 const authSignupRoute = authSignupRouteImport.update({
@@ -56,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/signin': typeof authSigninRoute
   '/signup': typeof authSignupRoute
   '/profile': typeof privateProfileRoute
+  '/jobs': typeof privateJobsRoute
   '/': typeof privateIndexRoute
 }
 export interface FileRoutesByTo {
@@ -63,6 +68,7 @@ export interface FileRoutesByTo {
   '/signin': typeof authSigninRoute
   '/signup': typeof authSignupRoute
   '/profile': typeof privateProfileRoute
+  '/jobs': typeof privateJobsRoute
   '/': typeof privateIndexRoute
 }
 export interface FileRoutesById {
@@ -73,6 +79,7 @@ export interface FileRoutesById {
   '/(auth)/signin': typeof authSigninRoute
   '/(auth)/signup': typeof authSignupRoute
   '/(private)/profile': typeof privateProfileRoute
+  '/(private)/jobs': typeof privateJobsRoute
   '/(private)/': typeof privateIndexRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +87,9 @@ export interface FileRouteTypes {
   fullPaths: '/ping' | '/signin' | '/signup' | '/profile' | '/'
   fileRoutesByTo: FileRoutesByTo
   to: '/ping' | '/signin' | '/signup' | '/profile' | '/'
+  fullPaths: '/ping' | '/signin' | '/signup' | '/jobs' | '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/ping' | '/signin' | '/signup' | '/jobs' | '/'
   id:
     | '__root__'
     | '/(auth)'
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/(auth)/signin'
     | '/(auth)/signup'
     | '/(private)/profile'
+    | '/(private)/jobs'
     | '/(private)/'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +143,11 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof privateProfileRouteImport
+    '/(private)/jobs': {
+      id: '/(private)/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof privateJobsRouteImport
       parentRoute: typeof privateRouteRoute
     }
     '/(auth)/signup': {
@@ -167,11 +183,13 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface privateRouteRouteChildren {
   privateProfileRoute: typeof privateProfileRoute
+  privateJobsRoute: typeof privateJobsRoute
   privateIndexRoute: typeof privateIndexRoute
 }
 
 const privateRouteRouteChildren: privateRouteRouteChildren = {
   privateProfileRoute: privateProfileRoute,
+  privateJobsRoute: privateJobsRoute,
   privateIndexRoute: privateIndexRoute,
 }
 

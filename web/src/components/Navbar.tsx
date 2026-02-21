@@ -47,9 +47,9 @@ export function Navbar() {
             <Users className="h-4 w-4" />
             <span className="hidden lg:block">Comunidades</span>
           </Link>
-          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#F3E8FF] text-[#6B7280] hover:text-[#8B5CF6] text-sm font-semibold transition-all">
+          <Link to="/jobs" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#F3E8FF] text-[#6B7280] hover:text-[#8B5CF6] text-sm font-semibold transition-all">
             <BriefcaseBusiness className="h-4 w-4" />
-            <span className="hidden lg:block">Empleo</span>
+            <span className="hidden lg:block">Empleos</span>
           </Link>
         </nav>
 
@@ -61,6 +61,9 @@ export function Navbar() {
             <div className="w-8 h-8 rounded-full bg-linear-to-tr from-[#F97316]/20 to-[#8B5CF6]/20 flex items-center justify-center">
               <User className="h-5 w-5 text-[#F97316]" />
             </div>
+            <p className="text-sm font-bold text-gray-500">
+              {session?.user.name || 'Mi Perfil'}
+            </p>
             <ChevronDown className={`h-4 w-4 text-[#6B7280] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
           </button>
 
