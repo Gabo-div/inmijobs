@@ -22,3 +22,9 @@ func (r *CompanyRepository) GetByID(id string) (*model.Company, error) {
 	err := r.db.Preload("Locations").First(&company, "id = ?", id).Error
 	return &company, err
 }
+
+func (r *CompanyRepository) GetByUserID(userID string) ([]model.Company, error) {
+	var companies []model.Company
+	err := r.db.Preload("Locations").Where("user_id = ?", userID).Find(&companies).Error
+	return companies, err
+}

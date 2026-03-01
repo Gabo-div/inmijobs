@@ -56,3 +56,19 @@ func (h *CompanyHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, res)
 }
+
+func (h *CompanyHandler) GetByUserID(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "No autorizado")
+		return
+	}
+
+	res, err := h.companyService.GetCompaniesByUserID(user.ID)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "Error al obtener las compañías")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, res)
+}

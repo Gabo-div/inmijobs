@@ -85,3 +85,44 @@ func (s *CompanyService) GetCompany(id string) (*dto.CompanyResponse, error) {
 
 	return res, nil
 }
+
+func (s *CompanyService) GetCompaniesByUserID(userID string) ([]dto.CompanyResponse, error) {
+	companies, err := s.repo.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []dto.CompanyResponse
+	for _, m := range companies {
+		companyRes := dto.CompanyResponse{
+			ID:          m.ID,
+			Name:        m.Name,
+			Weblink:     m.Weblink,
+			LinkedinURL: m.LinkedinURL,
+			Number:      m.Number,
+			Description: m.Description,
+			Sector:      m.Sector,
+			Foundation:  m.Foundation,
+			Size:        m.Size,
+			Logo:        m.Logo,
+			Banner:      m.Banner,
+			CreatedAt:   m.CreatedAt,
+			UpdatedAt:   m.UpdatedAt,
+			UserID:      m.UserID,
+		}
+
+		for _, l := range m.Locations {
+			companyRes.Locations = append(companyRes.Locations, dto.LocationResponse{
+				ID:      l.ID,
+				Address: l.Address,
+				City:    l.City,
+				Country: l.Country,
+				IsHQ:    l.IsHQ,
+			})
+		}
+
+		res = append(res, companyRes)
+	}
+
+	return res, nil
+}
