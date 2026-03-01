@@ -17,6 +17,7 @@
     "@libsql/client": "^0.17.0",
     "@t3-oss/env-core": "^0.13.10",
     "better-auth": "^1.4.17",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.5",

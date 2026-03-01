@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { BriefcaseBusiness, ChevronDown, LogOut, Search, Settings, User, Users } from 'lucide-react'
 import { authClient } from "@/lib/auth"
+import { useAppUser } from "@/lib/userContext"
 
 export function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const navigate = useNavigate()
 
   const { data: session } = authClient.useSession()
+  const { user } = useAppUser();
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -58,11 +60,19 @@ export function Navbar() {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-2 p-1 rounded-full border-2 border-[#E5E7EB] hover:border-[#F97316] transition-all"
           >
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-[#F97316]/20 to-[#8B5CF6]/20 flex items-center justify-center">
-              <User className="h-5 w-5 text-[#F97316]" />
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-linear-to-tr from-[#F97316]/20 to-[#8B5CF6]/20 flex items-center justify-center">
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name || 'Avatar'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-5 w-5 text-[#F97316]" />
+              )}
             </div>
             <p className="text-sm font-bold text-gray-500">
-              {session?.user.name || 'Mi Perfil'}
+              {user?.name || session?.user.name || 'Mi Perfil'}
             </p>
             <ChevronDown className={`h-4 w-4 text-[#6B7280] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -73,10 +83,10 @@ export function Navbar() {
               <div className="absolute right-0 mt-3 w-64 rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl z-20 py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
                 <div className="px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB]">
                   <p className="text-sm font-bold text-[#1F2937]">
-                    {session?.user.name || 'Mi Perfil'}
+                    {user?.name || session?.user.name || 'Mi Perfil'}
                   </p>
                   <p className="text-xs text-[#6B7280] truncate">
-                    {session?.user.email || 'Cargando correo...'}
+                    {user?.email || session?.user.email || 'Cargando correo...'}
                   </p>
                 </div>
 

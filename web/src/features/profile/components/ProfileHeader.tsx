@@ -1,12 +1,37 @@
+import { useRef, useState } from "react";
 import { ChevronDown, Edit, GraduationCap, MapPin } from "lucide-react";
 import type { User } from "../types";
 import { Button } from "@/components/ui/button";
 
 interface ProfileHeaderProps {
   user: User;
+  onEditProfile?: (what: 'avatar' | 'banner') => void;
 }
 
-export function ProfileHeader({ user }: ProfileHeaderProps) {
+export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = () => {
+    setMenuOpen((o: boolean) => {
+      const next = !o;
+      if (next && buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setMenuStyle({
+          position: 'fixed',
+          top: rect.bottom + window.scrollY,
+          left: rect.right + window.scrollX - 192, // width of menu
+        });
+      }
+      return next;
+    });
+  };
+  const triggerEdit = (what: 'avatar' | 'banner') => {
+    onEditProfile?.(what);
+    setMenuOpen(false);
+  };
+
   return (
     <div className="bg-white dark:bg-card rounded-xl shadow-sm overflow-hidden border dark:border-border flex flex-col shrink-0">
       <div className="h-28 md:h-40 bg-gray-100 relative shrink-0">
@@ -54,19 +79,50 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             <div className="min-w-0">
               <h1 className="text-xl font-bold truncate">{user.name}</h1>
               <p className="text-muted-foreground text-sm mt-0.5">{user.friendsCount} conexiones</p>
-              <p className="text-primary font-medium text-sm mt-1">{user.role}</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
-                {user.location.split(' · ').map((part, i) => (
-                  <span key={i} className="flex items-center gap-1">
-                    {i === 0 ? <MapPin className="w-3.5 h-3.5 shrink-0" /> : <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
-                    {part.trim()}
-                  </span>
-                ))}
-              </div>
+              {user.role && <p className="text-primary font-medium text-sm mt-1">{user.role}</p>}
+              {user.location && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
+                  {user.location.split(' · ').map((part, i) => (
+                    <span key={i} className="flex items-center gap-1">
+                      {i === 0 ? <MapPin className="w-3.5 h-3.5 shrink-0" /> : <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
+                      {part.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <Button variant="outline" size="sm"><Edit className="w-4 h-4 sm:mr-1" />Editar perfil</Button>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0"><ChevronDown className="w-4 h-4" /></Button>
+            <div ref={buttonRef} className="relative flex flex-wrap gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={handleToggle}>
+                <Edit className="w-4 h-4 sm:mr-1" />Editar perfil
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={handleToggle}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div style={menuStyle} className="z-50 w-48 bg-white dark:bg-card border dark:border-border rounded-xl shadow-lg">
+                    <button
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50"
+                      onClick={() => triggerEdit('avatar')}
+                    >
+                      Cambiar foto de perfil
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50"
+                      onClick={() => triggerEdit('banner')}
+                    >
+                      Cambiar foto de banner
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

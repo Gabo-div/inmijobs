@@ -10,9 +10,11 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
+import { UserProvider } from "../lib/userContext";
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
-    <>
+    <UserProvider>
       <Outlet />
       <TanStackDevtools
         config={{
@@ -26,6 +28,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           TanStackQueryDevtools,
         ]}
       />
-    </>
+    </UserProvider>
   ),
 })
