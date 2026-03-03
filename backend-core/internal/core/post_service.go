@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"log/slog"
 
@@ -20,6 +21,7 @@ type PostService interface {
 	CreatePost(ctx context.Context, req dto.CreatePostRequest) (*model.Post, error)
 	GetByID(ctx context.Context, id string) (*dto.PostResponseDTO, error)
 	DeletePost(ctx context.Context, id string) (*model.Post, error)
+	GetFeed(ctx context.Context, userID string, limit int, cursor string) ([]model.Post, *string, error)
 }
 
 type postService struct {
@@ -143,4 +145,39 @@ func (s *postService) DeletePost(ctx context.Context, id string) (*model.Post, e
 		return nil, err
 	}
 	return post, nil
+}
+
+func splitCursor(cursor string) (string, string) {
+	if cursor == "" {
+		return "", ""
+	}
+	parts := strings.SplitN(cursor, "_", 2)
+
+	if len(parts) != 2 {
+		return "", ""
+	}
+	// parts[0] is the timestamp, parts[1] is the ID
+	return parts[0], parts[1]
+}
+
+func (s *postService) GetFeed(ctx context.Context, userID string, limit int, cursor string) ([]model.Post, *string, error) {
+	createdAt, postID := splitCursor(cursor)
+
+	posts, err := s.repo.GetFeed(ctx, userID, limit, createdAt, postID)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, post := range posts {
+		fmt.Println(post)
+	}
+	var nextCursor *string
+
+	if len(posts) > 0 {
+		lastPost := posts[len(posts)-1]
+		formattedTime := lastPost.CreatedAt.Format("2006-01-02 15:04:05")
+		cursorStr := fmt.Sprintf("%s_%s", formattedTime, lastPost.ID)
+		nextCursor = &cursorStr
+	}
+
+	return posts, nextCursor, nil
 }

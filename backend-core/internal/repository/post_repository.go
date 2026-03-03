@@ -14,6 +14,7 @@ type PostRepo interface {
 	GetByID(ctx context.Context, id string) (*model.Post, error)
 	DeletePost(ctx context.Context, id string) (*model.Post, error)
 	IsAlreadyDeleted(ctx context.Context, id string) bool
+	GetFeed(ctx context.Context, userID string, limit int, createdAt string, postID string) ([]model.Post, error)
 }
 
 type postRepository struct {
@@ -28,17 +29,17 @@ func (r *postRepository) GetByID(ctx context.Context, id string) (*model.Post, e
 	var post model.Post
 
 	err := r.db.WithContext(ctx).
-        Preload("User").
-        Preload("Company").
+		Preload("User").
 		Preload("Company").
-        Preload("Job").
-        Preload("Images").
+		Preload("Company").
+		Preload("Job").
+		Preload("Images").
 		Preload("Interactions").
-        Preload("Interactions.User").
-        Preload("Interactions.Reaction").
-        Preload("Comments.User"). 
+		Preload("Interactions.User").
+		Preload("Interactions.Reaction").
+		Preload("Comments.User").
 		Preload("Comments").
-        First(&post,"id = ?", id).Error
+		First(&post, "id = ?", id).Error
 
 	return &post, err
 }
@@ -48,7 +49,7 @@ func (r *postRepository) EditPost(ctx context.Context, postID string, p model.Po
 
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
-		if err := tx.First(&editedPost, "posts.id = ?",postID).Error; err != nil {
+		if err := tx.First(&editedPost, "posts.id = ?", postID).Error; err != nil {
 			return err
 		}
 
@@ -105,4 +106,28 @@ func (r *postRepository) IsAlreadyDeleted(ctx context.Context, id string) bool {
 		return true
 	}
 	return false
+}
+
+func (r *postRepository) GetFeed(ctx context.Context, userID string, limit int, createdAt string, postID string) ([]model.Post, error) {
+	var posts []model.Post
+
+	sub1 := r.db.Table("connections").Select("requester_id").Where("receiver_id = ?", userID)
+	sub2 := r.db.Table("connections").Select("receiver_id").Where("requester_id = ?", userID)
+
+	query := r.db.Table("posts").
+		Where("(user_id IN (?) OR user_id IN (?) OR user_id = ?)", sub1, sub2, userID)
+
+	if createdAt != "" && postID != "" {
+		query = query.Where("(posts.created_at < ?) OR (posts.created_at = ? AND posts.id < ?)",
+			createdAt, createdAt, postID)
+	}
+
+	err := query.Order("posts.created_at DESC, posts.id DESC").
+		Limit(limit).
+		Find(&posts).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
