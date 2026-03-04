@@ -46,7 +46,7 @@ func main() {
 	commentHandler := api.NewCommentHandler(commentService, *authService)
 
 	postRepository := repository.NewPostRepository(db)
-	postService := core.NewPostService(postRepository,*jobRepository)
+	postService := core.NewPostService(postRepository, *jobRepository)
 	postHandler := api.NewPostHandler(postService, *authService)
 
 	interactionRepository := repository.NewInteractionRepository(db)
@@ -70,6 +70,8 @@ func main() {
 			r.Delete("/{id}", postHandler.DeletePost)
 			r.Post("/{id}/reactions", interactionHandler.TogglePostReaction)
 			r.Get("/{id}/reactions", interactionHandler.GetPostReactions)
+			r.Get("/feed", postHandler.GetFeed)
+
 		})
 
 		r.Route("/comments", func(r chi.Router) {
