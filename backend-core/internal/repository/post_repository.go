@@ -111,8 +111,13 @@ func (r *postRepository) IsAlreadyDeleted(ctx context.Context, id string) bool {
 func (r *postRepository) GetFeed(ctx context.Context, userID string, limit int, createdAt string, postID string) ([]model.Post, error) {
 	var posts []model.Post
 
-	sub1 := r.db.Table("connections").Select("requester_id").Where("receiver_id = ?", userID)
-	sub2 := r.db.Table("connections").Select("receiver_id").Where("requester_id = ?", userID)
+	sub1 := r.db.Table("connections").
+		Select("requester_id").
+		Where("receiver_id = ? AND status = ?", userID, "accepted")
+
+	sub2 := r.db.Table("connections").
+		Select("receiver_id").
+		Where("requester_id = ? AND status = ?", userID, "accepted")
 
 	query := r.db.Table("posts").
 		Where("(user_id IN (?) OR user_id IN (?) OR user_id = ?)", sub1, sub2, userID)

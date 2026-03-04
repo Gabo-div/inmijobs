@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -161,22 +162,29 @@ func splitCursor(cursor string) (string, string) {
 }
 
 func (s *postService) GetFeed(ctx context.Context, userID string, limit int, cursor string) ([]model.Post, *string, error) {
-	createdAt, postID := splitCursor(cursor)
+	var rawCursor string
+	if cursor != "" {
+		decodedBytes, err := base64.StdEncoding.DecodeString(cursor)
+		if err != nil {
+			return nil, nil, errors.New("Invalid cursor")
+		}
+		rawCursor = string(decodedBytes)
+	}
+	createdAt, postID := splitCursor(rawCursor)
 
 	posts, err := s.repo.GetFeed(ctx, userID, limit, createdAt, postID)
 	if err != nil {
 		return nil, nil, err
-	}
-	for _, post := range posts {
-		fmt.Println(post)
 	}
 	var nextCursor *string
 
 	if len(posts) > 0 {
 		lastPost := posts[len(posts)-1]
 		formattedTime := lastPost.CreatedAt.Format("2006-01-02 15:04:05")
-		cursorStr := fmt.Sprintf("%s_%s", formattedTime, lastPost.ID)
-		nextCursor = &cursorStr
+		rawCursor := fmt.Sprintf("%s_%s", formattedTime, lastPost.ID)
+
+		encoded := base64.StdEncoding.EncodeToString([]byte(rawCursor))
+		nextCursor = &encoded
 	}
 
 	return posts, nextCursor, nil
