@@ -23,6 +23,7 @@ type PostService interface {
 	GetByID(ctx context.Context, id string) (*dto.PostResponseDTO, error)
 	DeletePost(ctx context.Context, id string) (*model.Post, error)
 	GetFeed(ctx context.Context, userID string, limit int, cursor string) ([]model.Post, *string, error)
+	GetImagesByUserID(ctx context.Context, userID string) ([]string, error)
 }
 
 type postService struct {
@@ -188,4 +189,8 @@ func (s *postService) GetFeed(ctx context.Context, userID string, limit int, cur
 	}
 
 	return posts, nextCursor, nil
+}
+
+func (s *postService) GetImagesByUserID(ctx context.Context, userID string) ([]string, error) {
+	return s.repo.GetImagesByUserID(ctx, userID)
 }

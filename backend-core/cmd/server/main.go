@@ -86,7 +86,9 @@ func main() {
 
 		r.Route("/profiles", func(r chi.Router) {
 			r.Put("/me", profileHandler.UpdateProfile)
+			r.Put("/me/image", profileHandler.UpdateProfileImage)
 			r.Get("/{id}", profileHandler.GetProfile)
+			r.Get("/{userId}/images", postHandler.GetUserImages)
 		})
 
 		r.Route("/jobs", func(r chi.Router) {
