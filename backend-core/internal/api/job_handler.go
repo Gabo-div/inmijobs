@@ -1,27 +1,82 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/core"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
-type JobHandler struct {
-	jobService  core.JobService
-	authService core.AuthService
+type JobServiceInterface interface {
+	GetJobByID(ctx context.Context, jobID string) (*model.Job, error)
+	CreateJob(ctx context.Context, userID string, req dto.CreateJobRequest) (*model.Job, error)
+	UpdateJob(ctx context.Context, jobID string, job *model.Job) error
+	GetAllJobs(ctx context.Context, filters repository.JobFilters, page, limit int) ([]model.Job, int64, error)
+	CreateApplication(ctx context.Context, userID, jobID, coverLetter string) error
+	DeleteJob(ctx context.Context, jobID, userID string) error
+	GetJobApplications(ctx context.Context, jobID, userID string) ([]model.Application, error)
+	UpdateCompany(ctx context.Context, companyID, userID string, updates map[string]interface{}) error
 }
 
-func NewJobHandler(js core.JobService, as core.AuthService) *JobHandler {
+type JobAuthServiceInterface interface {
+	UserFromHeader(ctx context.Context, header http.Header) (model.User, error)
+}
+
+type JobHandler struct {
+	jobService  JobServiceInterface
+	authService JobAuthServiceInterface
+}
+
+func NewJobHandler(js JobServiceInterface, as JobAuthServiceInterface) *JobHandler {
 	return &JobHandler{
 		jobService:  js,
 		authService: as,
 	}
+}
+
+func (h *JobHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "Authentication required")
+		return
+	}
+
+	var req dto.CreateJobRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	if req.Title == "" || req.Description == "" || req.Location == "" || req.EmploymentType == "" || req.CompanyID == "" {
+		utils.RespondError(w, http.StatusBadRequest, "Missing required fields")
+		return
+	}
+
+	createdJob, err := h.jobService.CreateJob(r.Context(), user.ID, req)
+	if err == core.ErrCompanyNotFound {
+		utils.RespondError(w, http.StatusNotFound, "Company not found")
+		return
+	}
+	if err == core.ErrUnauthorizedAccess {
+		utils.RespondError(w, http.StatusForbidden, "You don't have permission to create jobs for this company")
+		return
+	}
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "Failed to create job")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusCreated, dto.CreateJobResponse{
+		ID:      createdJob.ID,
+		Message: "Job created successfully",
+	})
 }
 
 func (h *JobHandler) GetJobByID(w http.ResponseWriter, r *http.Request) {
