@@ -29,17 +29,20 @@ func main() {
 	jobRepository := repository.NewJobRepository(*db)
 	connRepository := repository.NewConnectionRepository(*db)
 	companyRepository := repository.NewCompanyRepository(*db)
+	portfolioRepository := repository.NewPortfolioRepository(*db)
 
 	companyService := core.NewCompanyService(*companyRepository)
 	authService := core.NewAuthService(*authRepository)
 	profileService := core.NewProfileService(*profileRepository)
 	jobService := core.NewJobService(*jobRepository)
+	portfolioService := core.NewPortfolioService(*portfolioRepository)
 
 	companyHandler := api.NewCompanyHandler(*companyService, *authService)
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
 	jobHandler := api.NewJobHandler(*jobService, *authService)
 	connHandler := api.NewConnectionHandler(connRepository, *authService)
+	portfolioHandler := api.NewPortfolioHandler(*portfolioService, *authService)
 
 	commentRepository := repository.NewCommentRepository(db)
 	commentService := core.NewCommentService(commentRepository)
@@ -107,6 +110,14 @@ func main() {
 			r.Post("/", connHandler.CreateConnection)
 			r.Put("/{id}", connHandler.UpdateConnection)
 			r.Delete("/{id}", connHandler.DeleteConnection)
+		})
+
+		r.Route("/portfolio", func(r chi.Router) {
+			r.Post("/", portfolioHandler.Upload)
+			r.Get("/me", portfolioHandler.GetMyPortfolio)
+			r.Get("/{userID}", portfolioHandler.GetUserPortfolio)
+			r.Get("/files/{fileID}/download", portfolioHandler.Download)
+			r.Delete("/{fileID}", portfolioHandler.Delete)
 		})
 	})
 

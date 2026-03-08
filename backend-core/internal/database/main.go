@@ -25,7 +25,7 @@ func NewDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	gormDB.AutoMigrate(
+	if err := gormDB.AutoMigrate(
 		&model.User{},
 		&model.Session{},
 		&model.Account{},
@@ -47,7 +47,11 @@ func NewDatabase() (*gorm.DB, error) {
 		&model.Interaction{},
 		&model.Application{},
 		&model.Connection{},
-	)
+		&model.PortfolioFile{},
+	); err != nil {
+		slog.Error("[Database] Migration failed", "error", err)
+		return nil, err
+	}
 
 	slog.Info("[Database] Migrations completed")
 
