@@ -149,3 +149,19 @@ func (p PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
 		"next_cursor": cur,
 	})
 }
+
+func (p PostHandler) GetUserImages(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "userId")
+	if userID == "" {
+		utils.RespondError(w, http.StatusBadRequest, "User ID is required")
+		return
+	}
+
+	images, err := p.svc.GetImagesByUserID(r.Context(), userID)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "Failed to get user images")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, dto.UserImagesResponse{Images: images})
+}

@@ -15,6 +15,7 @@ type PostRepo interface {
 	DeletePost(ctx context.Context, id string) (*model.Post, error)
 	IsAlreadyDeleted(ctx context.Context, id string) bool
 	GetFeed(ctx context.Context, userID string, limit int, createdAt string, postID string) ([]model.Post, error)
+	GetImagesByUserID(ctx context.Context, userID string) ([]string, error)
 }
 
 type postRepository struct {
@@ -135,4 +136,16 @@ func (r *postRepository) GetFeed(ctx context.Context, userID string, limit int, 
 		return nil, err
 	}
 	return posts, nil
+}
+
+func (r *postRepository) GetImagesByUserID(ctx context.Context, userID string) ([]string, error) {
+	var images []string
+	err := r.db.WithContext(ctx).Table("images").
+		Select("images.url").
+		Joins("JOIN post_images ON post_images.image_id = images.id").
+		Joins("JOIN posts ON posts.id = post_images.post_id").
+		Where("posts.user_id = ? AND posts.deleted_at IS NULL", userID).
+		Pluck("url", &images).Error
+
+	return images, err
 }
