@@ -1,7 +1,9 @@
 package api
 
 import (
+	"log"
 	"net/http"
+	"strconv"
 
 	"encoding/json"
 
@@ -114,5 +116,36 @@ func (p PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "Post deleted successfully",
 		"post":    post,
+	})
+}
+
+func (p PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
+
+	user, err := p.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	query := r.URL.Query()
+	limit, err := strconv.Atoi(query.Get("limit"))
+	if err != nil {
+		log.Println(err)
+		utils.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	cursor := query.Get("cursor")
+
+	posts, cur, err := p.svc.GetFeed(r.Context(), user.ID, limit, cursor)
+
+	if err != nil {
+		log.Println(err)
+		utils.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"message":     "User feed retrieved successfully",
+		"post":        posts,
+		"next_cursor": cur,
 	})
 }
