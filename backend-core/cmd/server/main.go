@@ -34,13 +34,13 @@ func main() {
 	companyService := core.NewCompanyService(*companyRepository)
 	authService := core.NewAuthService(*authRepository)
 	profileService := core.NewProfileService(*profileRepository)
-	jobService := core.NewJobService(*jobRepository)
+	jobService := core.NewJobService(jobRepository)
 	portfolioService := core.NewPortfolioService(*portfolioRepository)
 
 	companyHandler := api.NewCompanyHandler(*companyService, *authService)
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
-	jobHandler := api.NewJobHandler(*jobService, *authService)
+	jobHandler := api.NewJobHandler(jobService, *authService)
 	connHandler := api.NewConnectionHandler(connRepository, *authService)
 	portfolioHandler := api.NewPortfolioHandler(*portfolioService, *authService)
 
@@ -90,6 +90,7 @@ func main() {
 		})
 
 		r.Route("/jobs", func(r chi.Router) {
+			r.Post("/", jobHandler.CreateJob)
 			r.Get("/", jobHandler.GetJobs)
 			r.Get("/{id}", jobHandler.GetJobByID)
 			r.Put("/{id}", jobHandler.UpdateJob)

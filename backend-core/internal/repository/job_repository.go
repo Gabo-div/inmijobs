@@ -11,6 +11,21 @@ type JobRepository struct {
 	db gorm.DB
 }
 
+type JobRepositoryInterface interface {
+	GetJobByID(ctx context.Context, jobID string) (*model.Job, error)
+	CreateJob(ctx context.Context, job *model.Job) error
+	UpdateJob(ctx context.Context, jobID string, job *model.Job) error
+	GetAllJobs(ctx context.Context, filters JobFilters, page, limit int) ([]model.Job, int64, error)
+	CreateApplication(ctx context.Context, application *model.Application) error
+	CheckApplicationExists(ctx context.Context, userID, jobID string) (bool, error)
+	DeleteJob(ctx context.Context, jobID string) error
+	CheckJobOwnership(ctx context.Context, jobID, userID string) (bool, error)
+	GetJobApplications(ctx context.Context, jobID string) ([]model.Application, error)
+	GetCompanyById(ctx context.Context, companyID string) (*model.Company, error)
+	UpdateCompany(ctx context.Context, company *model.Company) error
+	CheckCompanyOwnership(ctx context.Context, companyID, userID string) (bool, error)
+}
+
 func NewJobRepository(db gorm.DB) *JobRepository {
 	return &JobRepository{
 		db: db,
@@ -23,6 +38,10 @@ func (r *JobRepository) GetJobByID(ctx context.Context, jobID string) (*model.Jo
 		return nil, err
 	}
 	return &job, nil
+}
+
+func (r *JobRepository) CreateJob(ctx context.Context, job *model.Job) error {
+	return r.db.WithContext(ctx).Create(job).Error
 }
 
 func (r *JobRepository) UpdateJob(ctx context.Context, jobID string, job *model.Job) error {
