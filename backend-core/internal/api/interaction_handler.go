@@ -3,51 +3,46 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/core"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
 type InteractionHandler struct {
-	service *core.InteractionService
+	service core.InteractionRepo
 }
 
-func NewInteractionHandler(service *core.InteractionService) *InteractionHandler {
+func NewInteractionHandler(service core.InteractionRepo) *InteractionHandler {
 	return &InteractionHandler{service: service}
 }
 
-// POST /posts/{id}/reactions
 func (h *InteractionHandler) TogglePostReaction(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
-	// 1. Obtener ID del post desde la URL usando Chi
-	postIDStr := chi.URLParam(r, "id")
-	postID, err := strconv.ParseUint(postIDStr, 10, 32)
-	if err != nil {
-		http.Error(w, `{"error": "ID de post inválido"}`, http.StatusBadRequest)
+	Postid := chi.URLParam(r, "id")
+	if Postid == "" {
+		utils.RespondError(w, http.StatusBadRequest, "Missing post ID")
 		return
 	}
 
-	// 2. Decodificar el JSON que envía el cliente
 	var req dto.ReactionRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, `{"error": "JSON inválido o incompleto"}`, http.StatusBadRequest)
+		utils.RespondError(w, http.StatusBadRequest, "ERROR: Invalid or incomplete JSON")
 		return
 	}
 
-	// 3. Llamar a tu servicio (notar que casteamos a uint y dejamos reactionID como int)
-	interaction, action, err := h.service.TogglePostReaction(req.UserID, uint(postID), req.ReactionID)
+	interaction, action, err := h.service.TogglePostReaction(req.UserID, Postid, req.ReactionID)
+
 	if err != nil {
-		http.Error(w, `{"error": "Error procesando la reacción"}`, http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, "ERROR: Loading reaction's info")
 		return
 	}
 
-	// 4. Preparar la respuesta
 	if action == "deleted" {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Reacción eliminada (Like quitado)"})
+		utils.RespondJSON(w, http.StatusAccepted, "The reaction was deleted successfully")
+
 		return
 	}
 
@@ -57,30 +52,22 @@ func (h *InteractionHandler) TogglePostReaction(w http.ResponseWriter, r *http.R
 		ReactionID:    interaction.ReactionID,
 		Action:        action,
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Reacción procesada con éxito",
-		"data":    response,
-	})
+	utils.RespondJSON(w, http.StatusCreated, response)
 }
 
-// GET /posts/{id}/reactions
 func (h *InteractionHandler) GetPostReactions(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
-	postIDStr := chi.URLParam(r, "id")
-	postID, err := strconv.ParseUint(postIDStr, 10, 32)
-	if err != nil {
-		http.Error(w, `{"error": "ID de post inválido"}`, http.StatusBadRequest)
+	Postid := chi.URLParam(r, "id")
+	if Postid == "" {
+		utils.RespondError(w, http.StatusBadRequest, "Missing post ID")
 		return
 	}
 
-	interactions, err := h.service.GetReactionsByPost(uint(postID))
+	interactions, err := h.service.GetReactionsByPost(Postid)
+
 	if err != nil {
-		http.Error(w, `{"error": "Error obteniendo reacciones"}`, http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, "ERROR: error listing reactions")
 		return
 	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"data": interactions})
+	utils.RespondJSON(w, http.StatusOK, interactions)
 }

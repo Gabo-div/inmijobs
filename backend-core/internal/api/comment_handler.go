@@ -11,27 +11,15 @@ import (
 )
 
 type CommentHandler struct {
-	commentService core.CommentService
+	commentService core.CommentServ
 	authService    core.AuthService
 }
 
-func NewCommentHandler(cs core.CommentService, as core.AuthService) *CommentHandler {
+func NewCommentHandler(cs core.CommentServ, as core.AuthService) *CommentHandler {
 	return &CommentHandler{
 		commentService: cs,
 		authService:    as,
 	}
-}
-
-func (h *CommentHandler) Routes() http.Handler {
-	r := chi.NewRouter()
-
-	r.Get("/", h.List)
-	r.Get("/{id}", h.GetByID)
-	r.Post("/", h.Create)
-	r.Put("/{id}", h.Update)
-	r.Delete("/{id}", h.Delete)
-
-	return r
 }
 
 func (h *CommentHandler) List(w http.ResponseWriter, r *http.Request) {

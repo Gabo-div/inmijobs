@@ -43,3 +43,7 @@ func (r ProfileRepository) GetUserByID(ctx context.Context, userID string) (mode
 	err := r.db.WithContext(ctx).First(&user, "id = ?", userID).Error
 	return user, err
 }
+
+func (r ProfileRepository) UpdateUserImage(ctx context.Context, userID string, imageURL string) error {
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", userID).Update("image", imageURL).Error
+}

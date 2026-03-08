@@ -11,8 +11,71 @@ import (
 )
 
 func Seed(db *gorm.DB) {
-	// Seed 5 Users, 3 Companies per user, 5 Jobs per company, and 10 Applications per job
-	slog.Info("[Database] Seeding test data...")
+
+	// Create Test User
+	userID := "user_test_123"
+	userID_2 := "user_test_456"
+
+	user := model.User{
+		ID:            userID,
+		Name:          "Test User",
+		Email:         "test@example.com",
+		EmailVerified: true,
+	}
+
+	user_2 := model.User{
+		ID:            userID_2,
+		Name:          "Test User 2",
+		Email:         "test2@example.com",
+		EmailVerified: true,
+	}
+
+	recruiter := model.User{
+		ID:    "user_test_123",
+		Name:  "Test Recruiter",
+		Email: "recruiter@test.com",
+	}
+
+	db.Clauses(clause.OnConflict{DoNothing: true}).Create(&recruiter)
+
+	result := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&user)
+
+	result_2 := db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoNothing: true,
+	}).Create(&user_2)
+
+	if result.Error != nil {
+		slog.Error("[Database] Failed to seed user", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		slog.Info("[Database] Seeded test user")
+	}
+
+	if result_2.Error != nil {
+		slog.Error("[Database] Failed to seed user", "error", result.Error)
+	} else if result.RowsAffected > 0 {
+		slog.Info("[Database] Seeded test user")
+	}
+
+	// Create Test Profile
+	profileID := utils.NewID()
+	profile := model.Profile{
+		ID:        profileID,
+		UserID:    userID,
+		Biography: toPtr("This is a test biography."),
+		Location:  toPtr("Test City, Country"),
+	}
+
+	result = db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoNothing: true,
+	}).Create(&profile)
+
+	reaction := model.Reaction{ID: 1, Name: "Me gusta", IconURL: "like.png"}
+	db.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "id"}}, DoNothing: true}).Create(&reaction)
 
 	// Seed Users
 	var seededUsers []model.User
@@ -152,8 +215,9 @@ func Seed(db *gorm.DB) {
 			}
 		}
 	}
-
+	
 	slog.Info("[Database] Seeded applications", "count", len(seededJobs)*10)
+
 }
 
 func toPtr[T any](v T) *T {

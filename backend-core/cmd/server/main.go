@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/api"
@@ -31,25 +29,29 @@ func main() {
 	jobRepository := repository.NewJobRepository(*db)
 	connRepository := repository.NewConnectionRepository(*db)
 	companyRepository := repository.NewCompanyRepository(*db)
+	portfolioRepository := repository.NewPortfolioRepository(*db)
 
 	companyService := core.NewCompanyService(*companyRepository)
 	authService := core.NewAuthService(*authRepository)
 	profileService := core.NewProfileService(*profileRepository)
-	jobService := core.NewJobService(*jobRepository)
+	jobService := core.NewJobService(jobRepository)
+	portfolioService := core.NewPortfolioService(*portfolioRepository)
 
 	companyHandler := api.NewCompanyHandler(*companyService, *authService)
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
-	jobHandler := api.NewJobHandler(*jobService, *authService)
+	jobHandler := api.NewJobHandler(jobService, *authService)
 	connHandler := api.NewConnectionHandler(connRepository, *authService)
+	portfolioHandler := api.NewPortfolioHandler(*portfolioService, *authService)
 
 	commentRepository := repository.NewCommentRepository(db)
-	commentService := core.NewCommentService(*commentRepository)
-	commentHandler := api.NewCommentHandler(*commentService, *authService)
+	commentService := core.NewCommentService(commentRepository)
+	commentHandler := api.NewCommentHandler(commentService, *authService)
 
 	postRepository := repository.NewPostRepository(db)
-	postService := core.NewPostService(postRepository)
-	postHandler := api.NewPostHandler(postService)
+	postService := core.NewPostService(postRepository, *jobRepository)
+	postHandler := api.NewPostHandler(postService, *authService)
+
 	interactionRepository := repository.NewInteractionRepository(db)
 	interactionService := core.NewInteractionService(interactionRepository)
 	interactionHandler := api.NewInteractionHandler(interactionService)
@@ -68,8 +70,11 @@ func main() {
 			r.Post("/", postHandler.CreatePost)
 			r.Put("/{id}", postHandler.EditPost)
 			r.Get("/{id}", postHandler.GetByID)
+			r.Delete("/{id}", postHandler.DeletePost)
 			r.Post("/{id}/reactions", interactionHandler.TogglePostReaction)
 			r.Get("/{id}/reactions", interactionHandler.GetPostReactions)
+			r.Get("/feed", postHandler.GetFeed)
+
 		})
 
 		r.Route("/comments", func(r chi.Router) {
@@ -81,10 +86,13 @@ func main() {
 
 		r.Route("/profiles", func(r chi.Router) {
 			r.Put("/me", profileHandler.UpdateProfile)
+			r.Put("/me/image", profileHandler.UpdateProfileImage)
 			r.Get("/{id}", profileHandler.GetProfile)
+			r.Get("/{userId}/images", postHandler.GetUserImages)
 		})
 
 		r.Route("/jobs", func(r chi.Router) {
+			r.Post("/", jobHandler.CreateJob)
 			r.Get("/", jobHandler.GetJobs)
 			r.Get("/{id}", jobHandler.GetJobByID)
 			r.Put("/{id}", jobHandler.UpdateJob)
@@ -95,19 +103,29 @@ func main() {
 
 		r.Route("/companies", func(r chi.Router) {
 			r.Post("/", companyHandler.Create)
-			r.Get("/", companyHandler.GetByUserID)
+			r.Get("/", companyHandler.CompanyFinder)
 			r.Get("/{id}", companyHandler.GetByID)
 			r.Put("/{id}", jobHandler.UpdateCompany)
 		})
 
 		r.Route("/connections", func(r chi.Router) {
+			r.Get("/", connHandler.GetConnections)
 			r.Post("/", connHandler.CreateConnection)
 			r.Put("/{id}", connHandler.UpdateConnection)
 			r.Delete("/{id}", connHandler.DeleteConnection)
 		})
+
+		r.Route("/portfolio", func(r chi.Router) {
+			r.Post("/", portfolioHandler.Upload)
+			r.Get("/me", portfolioHandler.GetMyPortfolio)
+			r.Get("/{userID}", portfolioHandler.GetUserPortfolio)
+			r.Get("/files/{fileID}/download", portfolioHandler.Download)
+			r.Delete("/{fileID}", portfolioHandler.Delete)
+		})
 	})
 
-	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	//port := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	port := ":8080"
 	log.Printf("Server starting on port %s", port)
 	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Server failed to start: %v", err)

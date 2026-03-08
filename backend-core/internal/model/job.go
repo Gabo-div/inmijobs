@@ -1,4 +1,7 @@
+
 package model
+
+type Status string
 
 type Job struct {
 	ID             string `gorm:"primaryKey"`
@@ -37,3 +40,4 @@ type Application struct {
 	JobID string `gorm:"not null;index"`
 	Job   Job    `gorm:"foreignKey:JobID"`
 }
+

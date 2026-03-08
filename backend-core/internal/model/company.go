@@ -26,11 +26,10 @@ type Company struct {
 }
 
 type Location struct {
-	ID      string `gorm:"primaryKey"`
-	Address string `gorm:"not null"`
-	City    string `gorm:"not null"`
-	Country string `gorm:"not null"`
-	IsHQ    bool   `gorm:"default:false"`
-
+	ID        string `gorm:"primaryKey"`
+	Address   string `gorm:"not null"`
+	City      string `gorm:"not null"`
+	Country   string `gorm:"not null"`
+	IsHQ      bool   `gorm:"default:false"`
 	CompanyID string `gorm:"not null;index"`
 }

@@ -9,15 +9,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type CommentRepository struct {
+type CommentRepo interface {
+	Create(ctx context.Context, comment model.Comment) (dto.CommentResponse, error)
+	Update(ctx context.Context, CommentID string, comment dto.UpdateCommentRequest) (model.Comment, error)
+	GetByID(ctx context.Context, id string) (model.Comment, error)
+	List(ctx context.Context, limit int) ([]model.Comment, error)
+	Delete(ctx context.Context, id string) error
+}
+
+type commentRepository struct {
 	db *gorm.DB
 }
 
-func NewCommentRepository(db *gorm.DB) *CommentRepository {
-	return &CommentRepository{db: db}
+func NewCommentRepository(db *gorm.DB) CommentRepo {
+	return &commentRepository{db: db}
 }
 
-func (r CommentRepository) Create(ctx context.Context, comment model.Comment) (dto.CommentResponse, error) {
+func (r commentRepository) Create(ctx context.Context, comment model.Comment) (dto.CommentResponse, error) {
 	if err := r.db.WithContext(ctx).Create(&comment).Error; err != nil {
 		return dto.CommentResponse{}, fmt.Errorf("repository: create comment: %w", err)
 	}
@@ -34,7 +42,7 @@ func (r CommentRepository) Create(ctx context.Context, comment model.Comment) (d
 	return resp, nil
 }
 
-func (r CommentRepository) Update(ctx context.Context, CommentID string, comment dto.UpdateCommentRequest) (model.Comment, error) {
+func (r commentRepository) Update(ctx context.Context, CommentID string, comment dto.UpdateCommentRequest) (model.Comment, error) {
 
 	var existing model.Comment
 	if _, err := gorm.G[model.Comment](r.db).Where("id = ?", CommentID).First(ctx); err != nil {
@@ -56,7 +64,7 @@ func (r CommentRepository) Update(ctx context.Context, CommentID string, comment
 	return existing, nil
 }
 
-func (r CommentRepository) Delete(ctx context.Context, id string) error {
+func (r commentRepository) Delete(ctx context.Context, id string) error {
 	_, err := gorm.G[model.Comment](r.db).
 		Where("id = ?", id).
 		Delete(ctx)
@@ -68,15 +76,15 @@ func (r CommentRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r CommentRepository) GetByID(ctx context.Context, id string) (model.Comment, error) {
-	comment, err := gorm.G[model.Comment](r.db).Preload("Comment.User",nil).Preload("User",nil).Where("id = ?", id).First(ctx)
+func (r commentRepository) GetByID(ctx context.Context, id string) (model.Comment, error) {
+	comment, err := gorm.G[model.Comment](r.db).Preload("Comment.User", nil).Preload("User", nil).Where("id = ?", id).First(ctx)
 	if err != nil {
 		return model.Comment{}, fmt.Errorf("repository: get comment by id: %w", err)
 	}
 	return comment, nil
 }
 
-func (r CommentRepository) List(ctx context.Context, limit int) ([]model.Comment, error) {
+func (r commentRepository) List(ctx context.Context, limit int) ([]model.Comment, error) {
 
 	comments, err := gorm.G[model.Comment](r.db).
 		Order("created_at desc").

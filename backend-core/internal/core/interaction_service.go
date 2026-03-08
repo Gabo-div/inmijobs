@@ -5,18 +5,23 @@ import (
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
 )
 
-type InteractionService struct {
-	repo *repository.InteractionRepository
+type InteractionRepo interface {
+	GetReactionsByPost(postID string) ([]model.Interaction, error)
+	TogglePostReaction(userID string, postID string, reactionID int) (*model.Interaction, string, error)
 }
 
-func NewInteractionService(repo *repository.InteractionRepository) *InteractionService {
-	return &InteractionService{repo: repo}
+type interactionService struct {
+	repo repository.InteractionRepo
 }
 
-func (s *InteractionService) TogglePostReaction(userID string, postID uint, reactionID int) (*model.Interaction, string, error) {
+func NewInteractionService(repo repository.InteractionRepo) InteractionRepo {
+	return &interactionService{repo: repo}
+}
+
+func (s *interactionService) TogglePostReaction(userID string, postID string, reactionID int) (*model.Interaction, string, error) {
 	return s.repo.TogglePostReaction(userID, postID, reactionID)
 }
 
-func (s *InteractionService) GetReactionsByPost(postID uint) ([]model.Interaction, error) {
+func (s *interactionService) GetReactionsByPost(postID string) ([]model.Interaction, error) {
 	return s.repo.GetReactionsByPost(postID)
 }

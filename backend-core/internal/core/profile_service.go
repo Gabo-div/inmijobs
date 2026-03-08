@@ -50,6 +50,10 @@ func (s ProfileService) UpdateProfile(ctx context.Context, userID string, req dt
 	return profile, nil
 }
 
+func (s ProfileService) UpdateProfileImage(ctx context.Context, userID string, imageURL string) error {
+	return s.profileRepository.UpdateUserImage(ctx, userID, imageURL)
+}
+
 func (s ProfileService) GetProfile(ctx context.Context, userID string) (model.Profile, error) {
 	return s.profileRepository.GetProfileByUserID(ctx, userID)
 }
