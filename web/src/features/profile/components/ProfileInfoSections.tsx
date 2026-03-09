@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 /* eslint-disable sort-imports */
 import { 
-    Cake, Globe, GraduationCap, Hand, Heart, Home, 
-    Lock, Mail, MapPin, Mic, Music, Pencil, Phone, Pin, Plane, Plus, 
-    Briefcase, Link as LinkIcon, MessageSquare, User as UserIcon, Users
+    Briefcase, Cake, Clapperboard, Gamepad2, Globe, GraduationCap, Hand, 
+    Heart, Home, Link as LinkIcon, Lock, Mail, MapPin, MessageSquare, Mic, 
+    Music, Pencil, Phone, Pin, Plane, Plus, Shirt, Tv, User as UserIcon, Users 
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,8 @@ function InfoRow({ icon: Icon, label, value, subValue, action, rightElement }: I
             </div>
 
             {/* Contenido Central */}
-            <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[2.25rem]">
+            {/* Corregido: min-h-[2.25rem] -> min-h-9 */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center min-h-9">
                 {label && <p className="text-sm font-semibold text-foreground mb-0.5">{label}</p>}
                 
                 <div className={`${action ? 'text-blue-600 group-hover:underline font-medium' : 'text-foreground text-sm'}`}>
@@ -404,9 +405,6 @@ export function NamesSection() {
                     </div>
                 </div>
             </div>
-
-            {/* Separador visual si lo deseas */}
-            {/* <hr className="border-border" /> */}
 
             {/* Bloque 2: Otros nombres */}
             <div>

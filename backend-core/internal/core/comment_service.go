@@ -8,23 +8,31 @@ import (
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
 )
 
-type CommentService struct {
-	commentRepository repository.CommentRepository
+type CommentServ interface {
+	ListComments(ctx context.Context, limit int) ([]model.Comment, error)
+	GetCommentByID(ctx context.Context, id string) (model.Comment, error)
+	CreateComment(ctx context.Context, createCommentRequest dto.CreateCommentRequest) (dto.CommentResponse, error)
+	UpdateComment(ctx context.Context, id string, updateCommentRequest dto.UpdateCommentRequest) (model.Comment, error)
+	DeleteComment(ctx context.Context, id string) error
 }
 
-func NewCommentService(cr repository.CommentRepository) *CommentService {
-	return &CommentService{commentRepository: cr}
+type commentService struct {
+	commentRepository repository.CommentRepo
 }
 
-func (s CommentService) ListComments(ctx context.Context, limit int) ([]model.Comment, error) {
+func NewCommentService(cr repository.CommentRepo) CommentServ {
+	return &commentService{commentRepository: cr}
+}
+
+func (s commentService) ListComments(ctx context.Context, limit int) ([]model.Comment, error) {
 	return s.commentRepository.List(ctx, limit)
 }
 
-func (s CommentService) GetCommentByID(ctx context.Context, id string) (model.Comment, error) {
+func (s commentService) GetCommentByID(ctx context.Context, id string) (model.Comment, error) {
 	return s.commentRepository.GetByID(ctx, id)
 }
 
-func (s CommentService) CreateComment(ctx context.Context, createCommentRequest dto.CreateCommentRequest) (dto.CommentResponse, error) {
+func (s commentService) CreateComment(ctx context.Context, createCommentRequest dto.CreateCommentRequest) (dto.CommentResponse, error) {
 
 	commentModel := model.Comment{
 		Content: createCommentRequest.Content,
@@ -34,11 +42,11 @@ func (s CommentService) CreateComment(ctx context.Context, createCommentRequest 
 	return s.commentRepository.Create(ctx, commentModel)
 }
 
-func (s CommentService) UpdateComment(ctx context.Context, id string, updateCommentRequest dto.UpdateCommentRequest) (model.Comment, error) {
+func (s commentService) UpdateComment(ctx context.Context, id string, updateCommentRequest dto.UpdateCommentRequest) (model.Comment, error) {
 
 	return s.commentRepository.Update(ctx, id, updateCommentRequest)
 }
 
-func (s CommentService) DeleteComment(ctx context.Context, id string) error {
+func (s commentService) DeleteComment(ctx context.Context, id string) error {
 	return s.commentRepository.Delete(ctx, id)
 }

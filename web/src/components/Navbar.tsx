@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { BriefcaseBusiness, ChevronDown, LogOut, Search, Settings, User, Users } from 'lucide-react'
+import { BriefcaseBusiness, Building2, ChevronDown, LogOut, Search, Settings, User, Users } from 'lucide-react'
 import { authClient } from "@/lib/auth"
 import { useAppUser } from "@/lib/userContext"
 
@@ -52,6 +52,10 @@ export function Navbar() {
           <Link to="/jobs" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#F3E8FF] text-[#6B7280] hover:text-[#8B5CF6] text-sm font-semibold transition-all">
             <BriefcaseBusiness className="h-4 w-4" />
             <span className="hidden lg:block">Empleos</span>
+          </Link>
+          <Link to="/companies" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#F3E8FF] text-[#6B7280] hover:text-[#8B5CF6] text-sm font-semibold transition-all">
+            <Building2 className="h-4 w-4" />
+            <span className="hidden lg:block">Compañías</span>
           </Link>
         </nav>
 

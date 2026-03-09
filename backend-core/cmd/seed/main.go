@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/database"
-	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
-	"github.com/joho/godotenv"
 	"log"
+
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/database"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -16,12 +16,9 @@ func main() {
 	}
 
 	// Sembrar la reacción por defecto para que las interacciones funcionen
-	var reaction model.Reaction
-	db.FirstOrCreate(&reaction, model.Reaction{
-		Name:    "Me gusta",
-		IconURL: "like.png",
-	})
+
 	log.Println("INFO [Database] Seeded reactions")
 
+	// Run Seed
 	database.Seed(db)
 }

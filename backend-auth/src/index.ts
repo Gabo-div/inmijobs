@@ -22,13 +22,16 @@ app.use(
   }),
 );
 
+
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 
 const getToken = async (headers: Headers) => {
+  
   try {
     const { token } = await auth.api.getToken({ headers });
+    console.log(" Token  con éxito:", token);
     return token;
   } catch (error) {
     return null;
@@ -45,9 +48,11 @@ app.all("*", async (c) => {
   // 👆 FIN DE LÍNEAS NUEVAS
 
   const token = await getToken(headers);
-
+    console.log(" Token  con éxito:", token);
   if (token) {
+
     headers.append("Authorization", `Bearer ${token}`);
+   
   }
 
   const fetchOptions: RequestInit = {
