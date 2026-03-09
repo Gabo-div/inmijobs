@@ -92,7 +92,7 @@ export function useCompanyForm(onSuccess?: () => void) {
     if (Object.keys(validationErrors).length > 0) {
       return
     }
-console.log('Submitting company with values:', values)
+    
     mutation.mutate({
       name: values.name.trim(),
       description: values.description.trim(),
