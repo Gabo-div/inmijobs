@@ -1,5 +1,5 @@
 import { Service } from "./service";
-import type { Job, JobFilters, PaginatedJobs, UpdateJobRequest } from "@/models/jobs";
+import type { Job, JobFilters, PaginatedJobs, UpdateJobRequest, CreateJobRequest, CreateJobResponse } from "@/models/jobs";
 import type { APIResponse } from "@/models/APIResponse";
 import type { CompanyApplication, CreateApplicationRequest, CreateApplicationResponse } from "@/models/applications";
 
@@ -8,24 +8,28 @@ class JobsService extends Service {
     return this.client.get("", { searchParams: filters }).json();
   }
 
+  createJob(data: CreateJobRequest): Promise<APIResponse<CreateJobResponse>> {
+    return this.client.post("", { json: data }).json();
+  }
+
   getJobById(id: string): Promise<APIResponse<Job>> {
-    return this.client.get(`/${id}`).json();
+    return this.client.get(id).json();
   }
 
   updateJobById(id: string, data: UpdateJobRequest): Promise<APIResponse<Job>> {
-    return this.client.put(`/${id}`, { json: data }).json();
+    return this.client.put(id, { json: data }).json();
   }
 
   deleteJobById(id: string): Promise<APIResponse<Job>> {
-    return this.client.delete(`/${id}`).json();
+    return this.client.delete(id).json();
   }
 
   applyToJob(id: string, data: CreateApplicationRequest): Promise<APIResponse<CreateApplicationResponse>> {
-    return this.client.post(`/${id}/applications`, { json: data }).json();
+    return this.client.post(`${id}/applications`, { json: data }).json();
   }
 
   getApplicationsForJob(id: string): Promise<APIResponse<Array<CompanyApplication>>> {
-    return this.client.get(`/${id}/applications`).json();
+    return this.client.get(`${id}/applications`).json();
   }
 }
 
