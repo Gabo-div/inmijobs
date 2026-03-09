@@ -15,6 +15,10 @@ func main() {
 		log.Fatalf("Fatal Error connecting to database: %v", err)
 	}
 
+	// Sembrar la reacción por defecto para que las interacciones funcionen
+
+	log.Println("INFO [Database] Seeded reactions")
+
 	// Run Seed
 	database.Seed(db)
 }

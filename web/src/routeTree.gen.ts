@@ -10,21 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PingRouteImport } from './routes/ping'
-import { Route as HomeRouteImport } from './routes/home'
 import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as privateIndexRouteImport } from './routes/(private)/index'
+import { Route as privateProfileRouteImport } from './routes/(private)/profile'
+import { Route as privateJobsRouteImport } from './routes/(private)/jobs'
+import { Route as privateCompaniesRouteImport } from './routes/(private)/companies'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSigninRouteImport } from './routes/(auth)/signin'
+import { Route as privatePostsPostIdRouteImport } from './routes/(private)/posts.$postId'
 
 const PingRoute = PingRouteImport.update({
   id: '/ping',
   path: '/ping',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const privateRouteRoute = privateRouteRouteImport.update({
@@ -40,6 +38,21 @@ const privateIndexRoute = privateIndexRouteImport.update({
   path: '/',
   getParentRoute: () => privateRouteRoute,
 } as any)
+const privateProfileRoute = privateProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => privateRouteRoute,
+} as any)
+const privateJobsRoute = privateJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => privateRouteRoute,
+} as any)
+const privateCompaniesRoute = privateCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => privateRouteRoute,
+} as any)
 const authSignupRoute = authSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -50,51 +63,89 @@ const authSigninRoute = authSigninRouteImport.update({
   path: '/signin',
   getParentRoute: () => authRouteRoute,
 } as any)
+const privatePostsPostIdRoute = privatePostsPostIdRouteImport.update({
+  id: '/posts/$postId',
+  path: '/posts/$postId',
+  getParentRoute: () => privateRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/home': typeof HomeRoute
   '/ping': typeof PingRoute
   '/signin': typeof authSigninRoute
   '/signup': typeof authSignupRoute
+  '/companies': typeof privateCompaniesRoute
+  '/jobs': typeof privateJobsRoute
+  '/profile': typeof privateProfileRoute
   '/': typeof privateIndexRoute
+  '/posts/$postId': typeof privatePostsPostIdRoute
 }
 export interface FileRoutesByTo {
-  '/home': typeof HomeRoute
   '/ping': typeof PingRoute
   '/signin': typeof authSigninRoute
   '/signup': typeof authSignupRoute
+  '/companies': typeof privateCompaniesRoute
+  '/jobs': typeof privateJobsRoute
+  '/profile': typeof privateProfileRoute
   '/': typeof privateIndexRoute
+  '/posts/$postId': typeof privatePostsPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(auth)': typeof authRouteRouteWithChildren
   '/(private)': typeof privateRouteRouteWithChildren
-  '/home': typeof HomeRoute
   '/ping': typeof PingRoute
   '/(auth)/signin': typeof authSigninRoute
   '/(auth)/signup': typeof authSignupRoute
+  '/(private)/companies': typeof privateCompaniesRoute
+  '/(private)/jobs': typeof privateJobsRoute
+  '/(private)/profile': typeof privateProfileRoute
   '/(private)/': typeof privateIndexRoute
+  '/(private)/posts/$postId': typeof privatePostsPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/home' | '/ping' | '/signin' | '/signup' | '/'
+  fullPaths:
+    | '/ping'
+    | '/signin'
+    | '/signup'
+    | '/companies'
+    | '/jobs'
+    | '/profile'
+    | '/'
+    | '/jobs'
+    | '/profile'
+    | '/'
+    | '/posts/$postId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/home' | '/ping' | '/signin' | '/signup' | '/'
+  to:
+    | '/ping'
+    | '/signin'
+    | '/signup'
+    | '/companies'
+    | '/jobs'
+    | '/profile'
+    | '/'
+    | '/jobs'
+    | '/profile'
+    | '/'
+    | '/posts/$postId'
   id:
     | '__root__'
     | '/(auth)'
     | '/(private)'
-    | '/home'
     | '/ping'
     | '/(auth)/signin'
     | '/(auth)/signup'
+    | '/(private)/companies'
+    | '/(private)/jobs'
+    | '/(private)/profile'
     | '/(private)/'
+    | '/(private)/posts/$postId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   authRouteRoute: typeof authRouteRouteWithChildren
   privateRouteRoute: typeof privateRouteRouteWithChildren
-  HomeRoute: typeof HomeRoute
   PingRoute: typeof PingRoute
 }
 
@@ -105,13 +156,6 @@ declare module '@tanstack/react-router' {
       path: '/ping'
       fullPath: '/ping'
       preLoaderRoute: typeof PingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(private)': {
@@ -135,6 +179,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privateIndexRouteImport
       parentRoute: typeof privateRouteRoute
     }
+    '/(private)/profile': {
+      id: '/(private)/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof privateProfileRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
+    '/(private)/jobs': {
+      id: '/(private)/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof privateJobsRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
+    '/(private)/companies': {
+      id: '/(private)/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof privateCompaniesRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
     '/(auth)/signup': {
       id: '/(auth)/signup'
       path: '/signup'
@@ -148,6 +213,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/signin'
       preLoaderRoute: typeof authSigninRouteImport
       parentRoute: typeof authRouteRoute
+    }
+    '/(private)/posts/$postId': {
+      id: '/(private)/posts/$postId'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId'
+      preLoaderRoute: typeof privatePostsPostIdRouteImport
+      parentRoute: typeof privateRouteRoute
     }
   }
 }
@@ -167,11 +239,19 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 )
 
 interface privateRouteRouteChildren {
+  privateCompaniesRoute: typeof privateCompaniesRoute
+  privateJobsRoute: typeof privateJobsRoute
+  privateProfileRoute: typeof privateProfileRoute
   privateIndexRoute: typeof privateIndexRoute
+  privatePostsPostIdRoute: typeof privatePostsPostIdRoute
 }
 
 const privateRouteRouteChildren: privateRouteRouteChildren = {
+  privateCompaniesRoute: privateCompaniesRoute,
+  privateJobsRoute: privateJobsRoute,
+  privateProfileRoute: privateProfileRoute,
   privateIndexRoute: privateIndexRoute,
+  privatePostsPostIdRoute: privatePostsPostIdRoute,
 }
 
 const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
@@ -181,7 +261,6 @@ const privateRouteRouteWithChildren = privateRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
   privateRouteRoute: privateRouteRouteWithChildren,
-  HomeRoute: HomeRoute,
   PingRoute: PingRoute,
 }
 export const routeTree = rootRouteImport

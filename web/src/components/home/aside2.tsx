@@ -1,11 +1,9 @@
-import { Search, MoreHorizontal, ChevronDown, Bell, Plus, Briefcase } from 'lucide-react'
+import { Bell, Briefcase, ChevronDown, MoreHorizontal, Plus, Search } from 'lucide-react'
 
 export const Aside2 = () => {
   return (
-    <aside className="w-80 hidden lg:flex flex-col gap-6 pl-2 h-screen sticky top-0 bg-white">
-
-      {/* SECCIÓN: Contactos */}
-      <section className="flex flex-col gap-1 bg-gray-100 p-4">
+    <aside className="w-80 hidden lg:flex flex-col gap-6 pl-2 h-full sticky top-0 border-l border-[#E5E7EB] bg-white/80 backdrop-blur-md">
+      <section className="flex flex-col gap-1 p-4">
         <div className="flex items-center justify-between text-gray-500 mb-2">
           <h3 className="font-semibold">Contactos</h3>
           <div className="flex gap-2">
@@ -13,8 +11,6 @@ export const Aside2 = () => {
             <MoreHorizontal size={18} className="cursor-pointer hover:text-black" />
           </div>
         </div>
-
-        {/* Item de Contacto */}
         <div className="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-lg cursor-pointer transition-colors">
           <div className="relative">
             <img src="https://images.mubicdn.net/images/cast_member/159438/cache-430279-1556077245/image-w856.jpg?size=300x" className="w-10 h-10 rounded-full" alt="Eduardo" />
@@ -22,10 +18,7 @@ export const Aside2 = () => {
           </div>
           <span className="font-medium text-gray-700 text-sm">Eduardo Crespo</span>
         </div>
-
         <hr className="border-gray-300" />
-
-        {/* Amigos / Grupos */}
         <div className="flex items-center justify-between text-gray-500 mb-2">
           <h3 className="font-semibold">Amigos</h3>
         </div>
@@ -36,19 +29,13 @@ export const Aside2 = () => {
           </div>
           <ChevronDown size={18} />
         </div>
-
         <hr className="border-gray-300" />
-
-        {/* Iconos de acción rápidos */}
         <div className="flex justify-end gap-4 mt-2 text-gray-400">
           <Bell size={18} className="hover:text-blue-600" />
           <Plus size={18} className="hover:text-blue-600" />
         </div>
       </section>
-
-      {/* SECCIÓN: Oportunidades Destacadas */}
-      <section className="flex flex-col gap-3 pl-2 bg-gray-100">
-
+      <section className="flex flex-col gap-3 pl-2">
         <div className="flex items-center justify-between text-gray-500 mb-2">
           <h3 className="font-semibold">Chats</h3>
         </div>
@@ -60,12 +47,9 @@ export const Aside2 = () => {
           <ChevronDown size={18} />
         </div>
 
-        
         <hr className="border-gray-300" />
-
         <h3 className="font-bold text-gray-800">Oportunidades Destacadas</h3>
 
-        {/* Tarjeta de Empleo */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
           <div className="flex gap-3">
             <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
@@ -86,7 +70,6 @@ export const Aside2 = () => {
           </div>
         </div>
 
-        {/* Otra Tarjeta */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
           <div className="flex gap-3">
             <div className="p-2 bg-gray-50 rounded-lg text-gray-400">

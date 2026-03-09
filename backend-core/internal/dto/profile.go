@@ -6,10 +6,26 @@ type UpdateProfileRequest struct {
 	Location  *string `json:"location"`
 }
 
+type UpdateProfileImageRequest struct {
+	Image string `json:"image"`
+}
+
+type UserImagesResponse struct {
+	Images []string `json:"images"`
+}
+
 type ProfileResponse struct {
 	ID        string  `json:"id"`
 	UserID    string  `json:"userId"`
 	Biography *string `json:"biography,omitempty"`
 	Title     *string `json:"title,omitempty"`
 	Location  *string `json:"location,omitempty"`
+}
+
+type CombinedProfileResponse struct {
+	Name      string  `json:"name"`
+	Image     *string `json:"image"`
+	Location  *string `json:"location,omitempty"`
+	Biography *string `json:"biography,omitempty"`
+	Title     *string `json:"title,omitempty"`
 }

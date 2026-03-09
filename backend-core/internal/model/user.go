@@ -1,5 +1,13 @@
 package model
 
+type ConnectionStatus string
+
+const (
+	StatusPending  ConnectionStatus = "pending"
+	StatusAccepted ConnectionStatus = "accepted"
+	StatusBlocked  ConnectionStatus = "blocked"
+)
+
 type User struct {
 	ID            string `gorm:"primaryKey"`
 	Name          string `gorm:"not null"`
@@ -9,9 +17,22 @@ type User struct {
 	CreatedAt     UnixTime `gorm:"not null;autoCreateTime"`
 	UpdatedAt     UnixTime `gorm:"not null;autoUpdateTime"`
 
-	Sessions []Session `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Accounts []Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Profile  *Profile  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Sessions            []Session    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Accounts            []Account    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Profile             *Profile     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ConnectionsSent     []Connection `gorm:"foreignKey:RequesterID"`
+	ConnectionsReceived []Connection `gorm:"foreignKey:ReceiverID"`
+}
+
+type Connection struct {
+	ID          string           `gorm:"primaryKey" json:"id"`
+	RequesterID string           `gorm:"not null;index" json:"requester_id"`
+	Requester   User             `gorm:"foreignKey:RequesterID" json:"-"`
+	ReceiverID  string           `gorm:"not null;index" json:"receiver_id"`
+	Receiver    User             `gorm:"foreignKey:ReceiverID" json:"-"`
+	Status      ConnectionStatus `gorm:"type:text;default:'pending'" json:"status"`
+	CreatedAt   UnixTime         `gorm:"not null;autoCreateTime" json:"created_at"`
+	UpdatedAt   UnixTime         `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
 type Session struct {
@@ -34,7 +55,7 @@ type Account struct {
 	AccessToken           *string
 	RefreshToken          *string
 	IDToken               *string
-	AccessTokenExpiresAt  *UnixTime `gorm:"type:integer"` // Puntero para soportar NULL
+	AccessTokenExpiresAt  *UnixTime `gorm:"type:integer"`
 	RefreshTokenExpiresAt *UnixTime `gorm:"type:integer"`
 	Scope                 *string
 	Password              *string

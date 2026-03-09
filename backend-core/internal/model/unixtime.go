@@ -26,9 +26,14 @@ func (ut *UnixTime) Scan(value interface{}) error {
 }
 
 func (ut UnixTime) Value() (driver.Value, error) {
-	return time.Time(ut).Unix(), nil
+	t := time.Time(ut)
+	if t.IsZero() {
+		return nil, nil
+	}
+	return t.UnixMilli(), nil
 }
 
 func (ut UnixTime) Time() time.Time {
 	return time.Time(ut)
 }
+

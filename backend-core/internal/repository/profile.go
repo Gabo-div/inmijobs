@@ -37,3 +37,13 @@ func (r ProfileRepository) GetProfileByUserID(ctx context.Context, userID string
 	result := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&profile)
 	return profile, result.Error
 }
+
+func (r ProfileRepository) GetUserByID(ctx context.Context, userID string) (model.User, error) {
+	var user model.User
+	err := r.db.WithContext(ctx).First(&user, "id = ?", userID).Error
+	return user, err
+}
+
+func (r ProfileRepository) UpdateUserImage(ctx context.Context, userID string, imageURL string) error {
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", userID).Update("image", imageURL).Error
+}

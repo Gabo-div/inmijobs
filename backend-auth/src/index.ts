@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { auth } from "../auth";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { env } from "../env";
 
 const app = new Hono();
 
@@ -21,13 +22,16 @@ app.use(
   }),
 );
 
+
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 
 const getToken = async (headers: Headers) => {
+  
   try {
     const { token } = await auth.api.getToken({ headers });
+    console.log(" Token  con éxito:", token);
     return token;
   } catch (error) {
     return null;
@@ -38,9 +42,11 @@ app.all("*", async (c) => {
   const headers = new Headers(c.req.raw.headers);
 
   const token = await getToken(headers);
-
+    console.log(" Token  con éxito:", token);
   if (token) {
+
     headers.append("Authorization", `Bearer ${token}`);
+   
   }
 
   const fetchOptions: RequestInit = {
@@ -64,7 +70,7 @@ app.all("*", async (c) => {
 serve(
   {
     fetch: app.fetch,
-    port: 3000,
+    port: env.PORT,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
