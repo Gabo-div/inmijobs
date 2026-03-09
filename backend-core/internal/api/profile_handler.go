@@ -51,6 +51,33 @@ func (h ProfileHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h ProfileHandler) UpdateProfileImage(w http.ResponseWriter, r *http.Request) {
+	user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	if err != nil {
+		utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req dto.UpdateProfileImageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Image == "" {
+		utils.RespondError(w, http.StatusBadRequest, "Image URL is required")
+		return
+	}
+
+	err = h.profileService.UpdateProfileImage(r.Context(), user.ID, req.Image)
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "Failed to update profile image")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile image updated successfully"})
+}
+
 func (h ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	
 	targetID := chi.URLParam(r, "id")

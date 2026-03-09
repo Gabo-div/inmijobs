@@ -5,8 +5,10 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/dto"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/repository"
+	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -18,10 +20,10 @@ var (
 )
 
 type JobService struct {
-	jobRepository repository.JobRepository
+	jobRepository repository.JobRepositoryInterface
 }
 
-func NewJobService(jr repository.JobRepository) *JobService {
+func NewJobService(jr repository.JobRepositoryInterface) *JobService {
 	return &JobService{
 		jobRepository: jr,
 	}
@@ -29,6 +31,52 @@ func NewJobService(jr repository.JobRepository) *JobService {
 
 func (s *JobService) GetJobByID(ctx context.Context, jobID string) (*model.Job, error) {
 	return s.jobRepository.GetJobByID(ctx, jobID)
+}
+
+func (s *JobService) CreateJob(ctx context.Context, userID string, req dto.CreateJobRequest) (*model.Job, error) {
+	company, err := s.jobRepository.GetCompanyById(ctx, req.CompanyID)
+	if err != nil {
+		slog.Error("[JobService][CreateJob] company not found", "companyID", req.CompanyID, "error", err)
+		return nil, ErrCompanyNotFound
+	}
+
+	if company.UserID != userID {
+		slog.Warn("[JobService][CreateJob] unauthorized attempt", "companyID", req.CompanyID, "userID", userID)
+		return nil, ErrUnauthorizedAccess
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	status := "open"
+	if req.Status != nil && *req.Status != "" {
+		status = *req.Status
+	}
+
+	job := &model.Job{
+		ID:             utils.NewID(),
+		Title:          req.Title,
+		Description:    req.Description,
+		Location:       req.Location,
+		SalaryMin:      req.SalaryMin,
+		SalaryMax:      req.SalaryMax,
+		EmploymentType: req.EmploymentType,
+		IsActive:       isActive,
+		CompanyID:      req.CompanyID,
+		RecruiterID:    userID,
+		Status:         status,
+	}
+
+	err = s.jobRepository.CreateJob(ctx, job)
+	if err != nil {
+		slog.Error("[JobService][CreateJob] failed to create job", "error", err)
+		return nil, err
+	}
+
+	slog.Info("[JobService][CreateJob] job created", "jobID", job.ID, "companyID", req.CompanyID, "userID", userID)
+	return job, nil
 }
 
 func (s *JobService) UpdateJob(ctx context.Context, jobID string, job *model.Job) error {

@@ -37,7 +37,7 @@ type Image struct {
 }
 
 type PostImage struct {
-	PostID    int       `gorm:"primaryKey"`
+	PostID    string    `gorm:"primaryKey"`
 	ImageID   uint      `gorm:"primaryKey"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }

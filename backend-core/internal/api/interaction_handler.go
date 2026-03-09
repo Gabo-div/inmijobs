@@ -53,7 +53,6 @@ func (h *InteractionHandler) TogglePostReaction(w http.ResponseWriter, r *http.R
 		Action:        action,
 	}
 	utils.RespondJSON(w, http.StatusCreated, response)
-	return
 }
 
 func (h *InteractionHandler) GetPostReactions(w http.ResponseWriter, r *http.Request) {

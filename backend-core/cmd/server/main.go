@@ -29,24 +29,27 @@ func main() {
 	jobRepository := repository.NewJobRepository(*db)
 	connRepository := repository.NewConnectionRepository(*db)
 	companyRepository := repository.NewCompanyRepository(*db)
+	portfolioRepository := repository.NewPortfolioRepository(*db)
 
 	companyService := core.NewCompanyService(*companyRepository)
 	authService := core.NewAuthService(*authRepository)
 	profileService := core.NewProfileService(*profileRepository)
-	jobService := core.NewJobService(*jobRepository)
+	jobService := core.NewJobService(jobRepository)
+	portfolioService := core.NewPortfolioService(*portfolioRepository)
 
 	companyHandler := api.NewCompanyHandler(*companyService, *authService)
 	pingHandler := api.NewPingHandler(*authService)
 	profileHandler := api.NewProfileHandler(*profileService, *authService)
-	jobHandler := api.NewJobHandler(*jobService, *authService)
+	jobHandler := api.NewJobHandler(jobService, *authService)
 	connHandler := api.NewConnectionHandler(connRepository, *authService)
+	portfolioHandler := api.NewPortfolioHandler(*portfolioService, *authService)
 
 	commentRepository := repository.NewCommentRepository(db)
 	commentService := core.NewCommentService(commentRepository)
 	commentHandler := api.NewCommentHandler(commentService, *authService)
 
 	postRepository := repository.NewPostRepository(db)
-	postService := core.NewPostService(postRepository,*jobRepository)
+	postService := core.NewPostService(postRepository, *jobRepository)
 	postHandler := api.NewPostHandler(postService, *authService)
 
 	interactionRepository := repository.NewInteractionRepository(db)
@@ -70,6 +73,8 @@ func main() {
 			r.Delete("/{id}", postHandler.DeletePost)
 			r.Post("/{id}/reactions", interactionHandler.TogglePostReaction)
 			r.Get("/{id}/reactions", interactionHandler.GetPostReactions)
+			r.Get("/feed", postHandler.GetFeed)
+
 		})
 
 		r.Route("/comments", func(r chi.Router) {
@@ -81,10 +86,13 @@ func main() {
 
 		r.Route("/profiles", func(r chi.Router) {
 			r.Put("/me", profileHandler.UpdateProfile)
+			r.Put("/me/image", profileHandler.UpdateProfileImage)
 			r.Get("/{id}", profileHandler.GetProfile)
+			r.Get("/{userId}/images", postHandler.GetUserImages)
 		})
 
 		r.Route("/jobs", func(r chi.Router) {
+			r.Post("/", jobHandler.CreateJob)
 			r.Get("/", jobHandler.GetJobs)
 			r.Get("/{id}", jobHandler.GetJobByID)
 			r.Put("/{id}", jobHandler.UpdateJob)
@@ -105,6 +113,14 @@ func main() {
 			r.Post("/", connHandler.CreateConnection)
 			r.Put("/{id}", connHandler.UpdateConnection)
 			r.Delete("/{id}", connHandler.DeleteConnection)
+		})
+
+		r.Route("/portfolio", func(r chi.Router) {
+			r.Post("/", portfolioHandler.Upload)
+			r.Get("/me", portfolioHandler.GetMyPortfolio)
+			r.Get("/{userID}", portfolioHandler.GetUserPortfolio)
+			r.Get("/files/{fileID}/download", portfolioHandler.Download)
+			r.Delete("/{fileID}", portfolioHandler.Delete)
 		})
 	})
 

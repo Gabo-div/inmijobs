@@ -32,6 +32,11 @@ type CreateApplicationRequest struct {
 	CoverLetter string `json:"coverLetter"`
 }
 
+type CreateJobResponse struct {
+	ID      string `json:"id"`
+	Message string `json:"message"`
+}
+
 type CreateApplicationResponse struct {
 	Message string `json:"message"`
 }
