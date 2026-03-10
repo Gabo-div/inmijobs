@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
 	"github.com/joho/godotenv"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -57,6 +58,16 @@ func main() {
 	interactionHandler := api.NewInteractionHandler(interactionService)
 	r := chi.NewRouter()
 
+	r.Use(cors.Handler(cors.Options{
+        // Permite tu frontend de React y el de Better-Auth
+        AllowedOrigins:   []string{"http://localhost:3001", "http://localhost:3000"},
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+        ExposedHeaders:   []string{"Link"},
+        // MUY IMPORTANTE: Esto permite que Go reciba las cookies
+        AllowCredentials: true,
+        MaxAge:           300,
+    }))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 	r.Use(middleware.StripSlashes)

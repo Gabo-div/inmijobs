@@ -10,9 +10,14 @@ import {
 } from 'lucide-react'
 import { authClient } from '@/lib/auth'
 
+import { useAppUser } from "@/lib/userContext";
+
 export const Aside1 = () => {
   const session = authClient.useSession()
-  const user = session.data?.user
+  const { user } = useAppUser();
+  const current = user || session.data?.user;
+  const avatarUrl = user?.avatarUrl || session.data?.user.image || "/assets/mascota/1.png";
+  const displayName = current?.name || '';
 
   const menuItems = [
     { label: 'News Feed', icon: Newspaper, to: '/home', badge: 1 },
@@ -36,7 +41,7 @@ export const Aside1 = () => {
               className="w-20 h-20 rounded-full border-0 bg-linear-to-tr from-purple-400/50 to-blue-400/50 text-transparent p-1"
             >
               <img
-                src={user?.image || undefined}
+                src={avatarUrl}
                 className="w-full h-full rounded-full object-cover opacity-100"
                 alt="Profile"
               />
@@ -46,8 +51,8 @@ export const Aside1 = () => {
           </div>
 
         </div>
-        <h2 className="font-bold mt-2 text-gray-800">{user?.name}</h2>
-        <p className="text-sm text-gray-400">@{user?.name}</p>
+        <h2 className="font-bold mt-2 text-gray-800">{displayName}</h2>
+        <p className="text-sm text-gray-400">@{displayName}</p>
       </Link>
 
       <nav className="flex flex-col gap-1">

@@ -41,6 +41,12 @@ const getToken = async (headers: Headers) => {
 app.all("*", async (c) => {
   const headers = new Headers(c.req.raw.headers);
 
+  // 👇 LÍNEAS NUEVAS: Limpiamos los encabezados problemáticos
+  headers.delete("connection");
+  headers.delete("host"); // El host debe ser localhost:8080, no el original
+  headers.delete("content-length"); // fetch calculará esto automáticamente si hay un body
+  // 👆 FIN DE LÍNEAS NUEVAS
+
   const token = await getToken(headers);
     console.log(" Token  con éxito:", token);
   if (token) {

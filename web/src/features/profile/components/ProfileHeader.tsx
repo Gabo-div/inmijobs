@@ -1,22 +1,27 @@
+import { useRef, useState } from "react";
 import { ChevronDown, Edit, GraduationCap, MapPin } from "lucide-react";
 import type { User } from "../types";
 import { Button } from "@/components/ui/button";
 
 interface ProfileHeaderProps {
   user: User;
+  onEditProfile?: (what: 'avatar' | 'banner') => void;
 }
 
-export function ProfileHeader({ user }: ProfileHeaderProps) {
+export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleToggle = () => {
+    setMenuOpen(!menuOpen);    
+  };
+  const triggerEdit = (what: 'avatar' | 'banner') => {
+    onEditProfile?.(what);
+    setMenuOpen(false);
+  };
+
   return (
-    <div className="bg-white dark:bg-card rounded-xl shadow-sm overflow-hidden border dark:border-border flex flex-col shrink-0">
-      <div className="h-28 md:h-40 bg-gray-100 relative shrink-0">
-        {user.coverUrl && (
-          <img
-            src={user.coverUrl}
-            alt="Cover"
-            className="w-full h-full object-cover opacity-90"
-          />
-        )}
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border dark:border-border flex flex-col shrink-0">      
+        <div className="h-28 md:h-40 bg-gradient-to-r from-[#fa8353] to-[#9256f4] relative shrink-0 rounded-t-xl">
         {user.tagline && (
           <div className="absolute right-4 md:right-6 bottom-3 md:bottom-4 max-w-[16rem] text-right">
             <p className="text-white/95 text-sm md:text-base font-medium drop-shadow-lg">
@@ -54,19 +59,46 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             <div className="min-w-0">
               <h1 className="text-xl font-bold truncate">{user.name}</h1>
               <p className="text-muted-foreground text-sm mt-0.5">{user.friendsCount} conexiones</p>
-              <p className="text-primary font-medium text-sm mt-1">{user.role}</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
-                {user.location.split(' · ').map((part, i) => (
-                  <span key={i} className="flex items-center gap-1">
-                    {i === 0 ? <MapPin className="w-3.5 h-3.5 shrink-0" /> : <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
-                    {part.trim()}
-                  </span>
-                ))}
-              </div>
+              {user.role && <p className="text-primary font-medium text-sm mt-1">{user.role}</p>}
+              {user.location && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-2">
+                  {user.location.split(' · ').map((part, i) => (
+                    <span key={i} className="flex items-center gap-1">
+                      {i === 0 ? <MapPin className="w-3.5 h-3.5 shrink-0" /> : <GraduationCap className="w-3.5 h-3.5 shrink-0" />}
+                      {part.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <Button variant="outline" size="sm"><Edit className="w-4 h-4 sm:mr-1" />Editar perfil</Button>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0"><ChevronDown className="w-4 h-4" /></Button>
+            <div className="relative flex flex-wrap gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={handleToggle}>
+                <Edit className="w-4 h-4 sm:mr-1" />Editar perfil
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={handleToggle}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+
+              {/* Menú desplegable posicionado con Tailwind */}
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+                  {/* AQUÍ ESTÁ LA MAGIA: absolute, top-full, right-0 y mt-2 */}
+                  <div className="absolute top-full right-0 mt-2 z-40 w-48 bg-white dark:bg-card border dark:border-border rounded-xl shadow-lg overflow-hidden">
+                    <button
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50 text-sm font-medium"
+                      onClick={() => triggerEdit('avatar')}
+                    >
+                      Cambiar foto de perfil
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

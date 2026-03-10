@@ -81,6 +81,7 @@ const privateProfileUserIdPortfolioRoute =
     id: '/$userId/portfolio',
     path: '/$userId/portfolio',
     getParentRoute: () => privateProfileRoute,
+  } as any)
 const privateEmpleosEmpleoIdAplicacionesRoute =
   privateEmpleosEmpleoIdAplicacionesRouteImport.update({
     id: '/empleos/$empleoId/aplicaciones',
@@ -98,8 +99,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof privateProfileRouteWithChildren
   '/': typeof privateIndexRoute
   '/posts/$postId': typeof privatePostsPostIdRoute
-  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
+  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
 }
 export interface FileRoutesByTo {
   '/ping': typeof PingRoute
@@ -111,8 +112,8 @@ export interface FileRoutesByTo {
   '/profile': typeof privateProfileRouteWithChildren
   '/': typeof privateIndexRoute
   '/posts/$postId': typeof privatePostsPostIdRoute
-  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
+  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,8 +128,8 @@ export interface FileRoutesById {
   '/(private)/profile': typeof privateProfileRouteWithChildren
   '/(private)/': typeof privateIndexRoute
   '/(private)/posts/$postId': typeof privatePostsPostIdRoute
-  '/(private)/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/(private)/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
+  '/(private)/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,11 +143,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/'
     | '/posts/$postId'
-    | '/profile/$userId/portfolio'
-    | '/profile'
-    | '/'
-    | '/posts/$postId'
     | '/empleos/$empleoId/aplicaciones'
+    | '/profile/$userId/portfolio'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/ping'
@@ -158,11 +156,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/'
     | '/posts/$postId'
-    | '/profile/$userId/portfolio'
-    | '/profile'
-    | '/'
-    | '/posts/$postId'
     | '/empleos/$empleoId/aplicaciones'
+    | '/profile/$userId/portfolio'
   id:
     | '__root__'
     | '/(auth)'
@@ -176,8 +171,8 @@ export interface FileRouteTypes {
     | '/(private)/profile'
     | '/(private)/'
     | '/(private)/posts/$postId'
-    | '/(private)/profile/$userId/portfolio'
     | '/(private)/empleos/$empleoId/aplicaciones'
+    | '/(private)/profile/$userId/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -271,6 +266,7 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/$userId/portfolio'
       preLoaderRoute: typeof privateProfileUserIdPortfolioRouteImport
       parentRoute: typeof privateProfileRoute
+    }
     '/(private)/empleos/$empleoId/aplicaciones': {
       id: '/(private)/empleos/$empleoId/aplicaciones'
       path: '/empleos/$empleoId/aplicaciones'

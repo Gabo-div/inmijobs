@@ -1,6 +1,7 @@
 export interface User {
     id: string;
     name: string;
+    email?: string;
     role: string;
     tagline?: string; // Valor del banner: "Transformando ideas en interfaces funcionales"
     location: string;

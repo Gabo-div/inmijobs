@@ -1,8 +1,11 @@
+import React, { useState } from "react";
+/* eslint-disable sort-imports */
 import { 
     Briefcase, Cake, Clapperboard, Gamepad2, Globe, GraduationCap, Hand, 
     Heart, Home, Link as LinkIcon, Lock, Mail, MapPin, MessageSquare, Mic, 
     Music, Pencil, Phone, Pin, Plane, Plus, Shirt, Tv, User as UserIcon, Users 
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 // --- COMPONENTE BASE PARA CADA FILA (Reutilizable) ---
@@ -45,73 +48,174 @@ function InfoRow({ icon: Icon, label, value, subValue, action, rightElement }: I
     );
 }
 
+// helper hook for editable text fields
+function useField(initial: string, label: string, placeholder?: string, inputType: string = 'text') {
+    const [value, setValue] = useState(initial);
+    const [open, setOpen] = useState(false);
+    const openEditor = () => setOpen(true);
+    const closeEditor = () => setOpen(false);
+    const display = value || <span className="text-muted-foreground">{placeholder ?? label}</span>;
+    const modal = (
+        <EditModal
+            open={open}
+            label={label}
+            initialValue={value}
+            placeholder={placeholder}
+            inputType={inputType}
+            onClose={closeEditor}
+            onSave={(val) => setValue(val)}
+        />
+    );
+    return { value, display, openEditor, modal, setValue };
+}
+
 // --- HELPER PARA ICONOS DE EDICIÓN (Candado/Lápiz) ---
-function EditActions() {
+function EditActions({ onEdit }: { onEdit?: () => void }) {
     return (
         <>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60 hover:text-foreground">
                 <Lock className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60 hover:text-foreground">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/60 hover:text-foreground" onClick={onEdit}>
                 <Pencil className="w-4 h-4" />
             </Button>
         </>
     );
 }
 
+// --- MODAL SIMPLE PARA EDITAR CAMPOS ---
+function EditModal({
+    open,
+    label,
+    initialValue,
+    placeholder,
+    inputType = 'text',
+    onClose,
+    onSave,
+}: {
+    open: boolean;
+    label: string;
+    initialValue?: string;
+    placeholder?: string;
+    inputType?: string;
+    onClose: () => void;
+    onSave: (val: string) => void;
+}) {
+    const [value, setValue] = useState(initialValue ?? "");
+
+    // when opening with a different initial value, sync it
+    React.useEffect(() => {
+        if (open) setValue(initialValue ?? "");
+    }, [open, initialValue]);
+
+    if (!open) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white dark:bg-card rounded-lg p-4 w-full max-w-sm shadow-lg">
+                <h3 className="text-lg font-semibold mb-2">Editar {label}</h3>
+                <input
+                    autoFocus
+                    type={inputType}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full px-3 py-2 rounded-md border border-gray-200 dark:border-border bg-transparent mb-4"
+                />
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+                    <Button onClick={() => { onSave(value); onClose(); }}>Guardar</Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ================= SECCIONES ESPECÍFICAS =================
 
 export function DetailsSection() {
+    const presentation = useField("Información sobre ti", "Presentación");
+    const pinned = useField("Detalles fijados", "Detalles fijados");
     return (
         <div className="space-y-6 animate-in fade-in">
             <div>
                 <h3 className="text-lg font-bold mb-4">Presentación</h3>
-                <InfoRow icon={Hand} value="Información sobre ti" subValue="" />
+                <InfoRow
+                    icon={Hand}
+                    value={presentation.value}
+                    rightElement={<EditActions onEdit={presentation.openEditor} />}
+                />
+                {presentation.modal}
             </div>
             <div>
                 <h3 className="text-lg font-bold mb-4">Detalles fijados</h3>
-                <InfoRow icon={Pin} value="Detalles fijados" />
+                <InfoRow
+                    icon={Pin}
+                    value={pinned.display}
+                    rightElement={<EditActions onEdit={pinned.openEditor} />}
+                />
+                {pinned.modal}
             </div>
         </div>
     );
 }
 
 export function PersonalDataSection() {
+    const locationField = useField("Ciudad o localidad actual", "Ubicación");
+    const originField = useField("Ciudad de origen", "Ciudad de origen");
+    const birthday = useField("", "Fecha de nacimiento", "DD/MM/AAAA", "date");
+    const relationship = useField("Situación sentimental", "Situación sentimental");
+    const family = useField("Familia", "Familiares");
+    const gender = useField("Hombre", "Género");
+    const pronouns = useField("masculino", "Pronombres", "masculino / femenino / etc.");
+    const languages = useField("Idiomas", "Idiomas");
+
     return (
         <div className="space-y-6 animate-in fade-in">
             {/* Ubicación */}
             <div>
                 <h3 className="font-semibold mb-3">Ubicación</h3>
-                <InfoRow icon={MapPin} value="Ciudad o localidad actual" />
+                <InfoRow icon={MapPin} value={locationField.display} rightElement={<EditActions onEdit={locationField.openEditor} />} />
+                {locationField.modal}
             </div>
             
             {/* Ciudad de origen */}
             <div>
                 <h3 className="font-semibold mb-3">Ciudad de origen</h3>
-                <InfoRow icon={Home} value="Ciudad de origen" />
+                <InfoRow icon={Home} value={originField.display} rightElement={<EditActions onEdit={originField.openEditor} />} />
+                {originField.modal}
             </div>
 
             {/* Fecha de nacimiento */}
             <div>
                 <h3 className="font-semibold mb-3">Fecha de nacimiento</h3>
-                <InfoRow 
-                    icon={Cake} 
-                    value="10 de agosto" 
-                    subValue="2004 (Año de nacimiento)"
-                    rightElement={<EditActions />}
-                />
+                {(() => {
+                    const display = birthday.value
+                        ? birthday.value.split('-').reverse().join('/')
+                        : <span className="text-muted-foreground">DD/MM/AAAA</span>;
+                    return (
+                        <InfoRow
+                            icon={Cake}
+                            value={display}
+                            rightElement={<EditActions onEdit={birthday.openEditor} />}
+                        />
+                    );
+                })()}
+                {birthday.modal}
             </div>
 
             {/* Situación sentimental */}
             <div>
                 <h3 className="font-semibold mb-3">Situación sentimental</h3>
-                <InfoRow icon={Heart} value="Situación sentimental" />
+                <InfoRow icon={Heart} value={relationship.value} rightElement={<EditActions onEdit={relationship.openEditor} />} />
+                {relationship.modal}
             </div>
 
             {/* Familiares */}
             <div>
                 <h3 className="font-semibold mb-3">Familiares</h3>
-                <InfoRow icon={Users} value="Familia" />
+                <InfoRow icon={Users} value={family.value} rightElement={<EditActions onEdit={family.openEditor} />} />
+                {family.modal}
             </div>
 
             {/* Género */}
@@ -119,10 +223,11 @@ export function PersonalDataSection() {
                 <h3 className="font-semibold mb-3">Género</h3>
                 <InfoRow 
                     icon={UserIcon} 
-                    value="Hombre" 
+                    value={gender.value} 
                     subValue="Género"
-                    rightElement={<EditActions />}
+                    rightElement={<EditActions onEdit={gender.openEditor} />}
                 />
+                {gender.modal}
             </div>
 
             {/* Pronombres */}
@@ -130,97 +235,106 @@ export function PersonalDataSection() {
                 <h3 className="font-semibold mb-3">Pronombres</h3>
                 <InfoRow 
                     icon={MessageSquare} 
-                    value="masculino" 
+                    value={pronouns.value} 
                     subValue="Pronombres del sistema"
-                    rightElement={<EditActions />} 
+                    rightElement={<EditActions onEdit={pronouns.openEditor} />} 
                 />
+                {pronouns.modal}
             </div>
              {/* Idiomas */}
              <div>
                 <h3 className="font-semibold mb-3">Idiomas</h3>
-                <InfoRow icon={Globe} value="Idiomas" />
+                <InfoRow icon={Globe} value={languages.value} rightElement={<EditActions onEdit={languages.openEditor} />} />
+                {languages.modal}
             </div>
         </div>
     );
 }
 
 export function EmploymentSection() {
+    const field = useField("Experiencia laboral", "Empleo");
     return (
         <div className="animate-in fade-in">
             <h3 className="text-lg font-bold mb-4">Empleo</h3>
-            <InfoRow icon={Briefcase} value="Experiencia laboral" />
+            <InfoRow icon={Briefcase} value={field.display} rightElement={<EditActions onEdit={field.openEditor} />} />
+            {field.modal}
         </div>
     );
 }
 
 export function EducationSection() {
+    const uni = useField("Universidad", "Universidad");
+    const school = useField("Escuela secundaria", "Escuela secundaria");
     return (
         <div className="space-y-6 animate-in fade-in">
             <div>
                 <h3 className="text-lg font-bold mb-4">Universidad</h3>
-                <InfoRow icon={GraduationCap} value="Universidad" />
+                <InfoRow icon={GraduationCap} value={uni.value} rightElement={<EditActions onEdit={uni.openEditor} />} />
+                {uni.modal}
             </div>
             <div>
                 <h3 className="text-lg font-bold mb-4">Escuela secundaria</h3>
-                <InfoRow icon={Home} value="Escuela secundaria" />
+                <InfoRow icon={Home} value={school.value} rightElement={<EditActions onEdit={school.openEditor} />} />
+                {school.modal}
             </div>
         </div>
     );
 }
 
 export function HobbiesSection() {
+    const field = useField("Pasatiempos", "Pasatiempos");
     return (
         <div className="animate-in fade-in">
             <h3 className="text-lg font-bold mb-4">Pasatiempos</h3>
-            {/* Corregido: Eliminado atributo icon duplicado */}
-            <InfoRow icon={Heart} value="Pasatiempos" /> 
+            <InfoRow icon={Heart} value={field.display} rightElement={<EditActions onEdit={field.openEditor} />} />
+            {field.modal}
+            {/* Nota: puedes reemplazar el icono si prefieres otro (por ejemplo Gamepad2) */}
         </div>
     );
 }
 
 export function InterestsSection() {
-    // Mapeo simple para la lista de intereses
-    const items = [
-        { label: 'Música', icon: Music },
-        { label: 'Programas de TV', icon: Tv },
-        { label: 'Películas', icon: Clapperboard },
-        { label: 'Juegos', icon: Gamepad2 },
-        { label: 'Deportistas y equipos deportivos', icon: Shirt },
-    ];
-
+    // for simplicity, allow editing the overall list description
+    const field = useField("Música, TV, Películas, Juegos, Deportistas...", "Intereses");
     return (
         <div className="space-y-6 animate-in fade-in">
-            {items.map((item) => (
-                <div key={item.label}>
-                    <h3 className="font-semibold mb-3">{item.label}</h3>
-                    <InfoRow icon={item.icon} value={item.label} />
-                </div>
-            ))}
+            <h3 className="font-semibold mb-3">Intereses</h3>
+            <InfoRow icon={Music} value={field.display} rightElement={<EditActions onEdit={field.openEditor} />} />
+            {field.modal}
         </div>
     );
 }
 
 export function TravelSection() {
+    const field = useField("Lugares", "Viajes");
     return (
         <div className="animate-in fade-in">
             <h3 className="text-lg font-bold mb-1">Viajes</h3>
             <p className="text-sm text-muted-foreground mb-4">Agrega hasta 450 lugares que hayas visitado.</p>
-            <InfoRow icon={Plane} value="Lugares" />
+            <InfoRow icon={Plane} value={field.display} rightElement={<EditActions onEdit={field.openEditor} />} />
+            {field.modal}
         </div>
     );
 }
 
 export function LinksSection() {
+    const field = useField("Sitios web, blogs, portfolios", "Enlaces");
     return (
         <div className="animate-in fade-in">
             <h3 className="text-lg font-bold mb-1">Enlaces</h3>
             <p className="text-sm text-muted-foreground mb-4">Agrega hasta 10 enlaces.</p>
-            <InfoRow icon={LinkIcon} value="Sitios web, blogs, portfolios" action />
+            <InfoRow icon={LinkIcon} value={field.display} action rightElement={<EditActions onEdit={field.openEditor} />} />
+            {field.modal}
         </div>
     );
 }
 
 export function ContactSection() {
+    // reuse existing logic but convert to useField for phone/email too
+    const phoneAField = useField("", "Teléfono A", "0414-1234567");
+    const phoneBField = useField("", "Teléfono B", "0414-1234567");
+    const emailField = useField("", "Correo electrónico", "usuario@ejemplo.com");
+
     return (
         <div className="space-y-6 animate-in fade-in">
             {/* Medios sociales */}
@@ -239,17 +353,19 @@ export function ContactSection() {
                     <div className="flex-1">
                          <div className="flex justify-between items-start mb-2">
                             <div>
-                                <p className="text-sm font-medium">0414-9917818</p>
+                                <p className="text-sm font-medium">{phoneAField.display}</p>
                                 <p className="text-xs text-muted-foreground">Celular</p>
                             </div>
-                            <div className="flex gap-2"><EditActions /></div>
+                            <div className="flex gap-2"><EditActions onEdit={phoneAField.openEditor} /></div>
+                            {phoneAField.modal}
                          </div>
                          <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium">+86 176 7731 8240</p>
+                                <p className="text-sm font-medium">{phoneBField.display}</p>
                                 <p className="text-xs text-muted-foreground">Celular</p>
                             </div>
-                            <div className="flex gap-2"><Button variant="ghost" size="icon" className="h-8 w-8"><Lock className="w-4 h-4 text-muted-foreground" /></Button></div>
+                            <div className="flex gap-2"><EditActions onEdit={phoneBField.openEditor} /></div>
+                            {phoneBField.modal}
                          </div>
                     </div>
                 </div>
@@ -260,10 +376,11 @@ export function ContactSection() {
                 <h3 className="font-semibold mb-3">Correo electrónico</h3>
                 <InfoRow 
                     icon={Mail} 
-                    value="hectorantonio1008@gmail.com" 
+                    value={emailField.display} 
                     subValue="Correo electrónico"
-                    rightElement={<EditActions />}
+                    rightElement={<EditActions onEdit={emailField.openEditor} />}
                 />
+                {emailField.modal}
             </div>
         </div>
     );
