@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import {
+  Briefcase,
   Image as ImageIcon,
   MessageSquare,
   Newspaper,
@@ -20,6 +21,7 @@ export const Aside1 = () => {
 
   const menuItems = [
     { label: 'News Feed', icon: Newspaper, to: '/home', badge: 1 },
+    { label: 'Portfolio', icon: Briefcase, to: '/portfolio' },
     { label: 'Messages', icon: MessageSquare, to: '/messages', badge: 6 },
     { label: 'Forums', icon: Users, to: '/forums', badge: 2 },
     { label: 'Friends', icon: UserCircle, to: '/friends', badge: 3 },

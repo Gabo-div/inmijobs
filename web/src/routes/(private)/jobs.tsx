@@ -1,12 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query'
 import type { JobFilters } from '@/models/jobs';
 import { JobCard } from '@/components/jobs/JobCard';
 import JobDetailView from '@/components/jobs/JobDetailView';
+import { CreateJobModal } from '@/components/jobs/modals/CreateJobModal';
+import { MyJobsModal } from '@/components/jobs/modals/MyJobsModal';
 import { useJobs } from '@/hooks/jobs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import JobsSearchFilter from '@/components/jobs/JobsSearchFilter';
 import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth';
+import { companiesService } from '@/services/companiesService';
 
 export const Route = createFileRoute('/(private)/jobs')({
   component: RouteComponent,
@@ -20,11 +25,54 @@ function RouteComponent() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const activeJob = data?.data.jobs.find(job => job.id === selectedId);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMyJobsModalOpen, setIsMyJobsModalOpen] = useState(false);
+
+  const { data: session } = authClient.useSession();
+  const userId = session?.user.id;
+
+  console.log(session);
+
+  const { data: companiesData } = useQuery({
+    queryKey: ['companies', { userId }],
+    queryFn: () => companiesService.getCompanies({ userId }),
+    enabled: Boolean(userId),
+  })
+  
+
+  const companies = companiesData?.data?.data ?? [];
+  const hasCompany = companies.length > 0;
+
   useEffect(() => {
     if (data?.data.jobs.length) {
       setSelectedId(data.data.jobs[0]?.id || null);
     }
   }, [data])
+
+  const actionButtons = useMemo(() => (
+    <div className="flex flex-col md:flex-row gap-2 md:items-center md:justify-between pb-4">
+      <div className="flex gap-2">
+        <Button
+          variant="secondary"
+          onClick={() => setIsCreateModalOpen(true)}
+          disabled={!hasCompany}
+        >
+          Publicar Empleo
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => setIsMyJobsModalOpen(true)}
+        >
+          Mis Publicaciones
+        </Button>
+      </div>
+      {!hasCompany && (
+        <p className="text-xs text-gray-500">
+          Necesitas tener una empresa asociada para publicar empleos.
+        </p>
+      )}
+    </div>
+  ), [hasCompany])
 
   return (
     <div className="bg-linear-to-br from-[#FFF3E6] to-[#F3E8FF] h-[calc(100vh-64px)] p-8 gap-4 flex flex-col">
@@ -33,6 +81,8 @@ function RouteComponent() {
         setPage(1);
       }}
       />
+
+      {actionButtons}
 
       <div className="max-w-7xl flex w-full flex-1 mx-auto rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
         {data?.data.jobs.length ? (<>
@@ -71,5 +121,16 @@ function RouteComponent() {
           </div>
         }
       </div>
+
+      <CreateJobModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        companies={companies}
+      />
+
+      <MyJobsModal
+        isOpen={isMyJobsModalOpen}
+        onClose={() => setIsMyJobsModalOpen(false)}
+      />
     </div>)
 }

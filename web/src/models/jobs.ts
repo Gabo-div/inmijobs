@@ -20,13 +20,32 @@ export const updateJobRequestSchema = z.object({
   title: z.string(),
   description: z.string(),
   location: z.string(),
-  salaryMin: z.number().optional(),
-  salaryMax: z.number().optional(),
-  employmentType: z.string(),
-  isActive: z.boolean(),
+  salary_min: z.number().optional(),
+  salary_max: z.number().optional(),
+  employment_type: z.string(),
+  is_active: z.boolean(),
 });
 
 export type UpdateJobRequest = z.infer<typeof updateJobRequestSchema>;
+
+export const createJobRequestSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  location: z.string(),
+  company_id: z.string(),
+  salary_min: z.number().optional(),
+  salary_max: z.number().optional(),
+  employment_type: z.string(),
+});
+
+export type CreateJobRequest = z.infer<typeof createJobRequestSchema>;
+
+export const createJobResponseSchema = z.object({
+  id: z.string(),
+  message: z.string(),
+});
+
+export type CreateJobResponse = z.infer<typeof createJobResponseSchema>;
 
 export enum EmploymentType {
   FULL_TIME = "full-time",
@@ -46,6 +65,7 @@ export const jobFiltersSchema = z.object({
   minSalary: z.number().optional(),
   maxSalary: z.number().optional(),
   sector: z.string().optional(),
+  userId: z.string().optional(),
 }).partial();
 
 export type JobFilters = z.infer<typeof jobFiltersSchema>;
