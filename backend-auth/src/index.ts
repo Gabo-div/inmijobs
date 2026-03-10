@@ -15,7 +15,7 @@ app.use(
       "Content-Type",
       "X-User-Agent",
     ],
-    allowMethods: ["POST", "GET", "OPTIONS"],
+    allowMethods: ["POST", "GET", "OPTIONS", "DELETE"],
     exposeHeaders: ["Content-Length"],
     maxAge: 600,
     credentials: true,
@@ -49,14 +49,17 @@ app.all("*", async (c) => {
    
   }
 
-  const fetchOptions: RequestInit = {
+  headers.delete("content-length");
+  const fetchOptions: any = {
     method: c.req.method,
-    headers,
+    headers: headers,
+    body: c.req.method !== "GET" && c.req.method !== "HEAD" ? c.req.raw.body : undefined,
+    duplex: 'half'
   };
 
-  if (c.req.method !== "GET" && c.req.method !== "HEAD") {
-    fetchOptions.body = await c.req.text();
-  }
+  //if (c.req.method !== "GET" && c.req.method !== "HEAD") {
+  //  fetchOptions.body = await c.req.text();
+  //}
 
   const res = await fetch(`http://localhost:8080${c.req.path}`, fetchOptions);
 
