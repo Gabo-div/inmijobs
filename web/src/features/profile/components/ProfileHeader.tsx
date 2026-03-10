@@ -10,22 +10,9 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
-  const buttonRef = useRef<HTMLDivElement>(null);
 
   const handleToggle = () => {
-    setMenuOpen((o: boolean) => {
-      const next = !o;
-      if (next && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        setMenuStyle({
-          position: 'fixed',
-          top: rect.bottom + window.scrollY,
-          left: rect.right + window.scrollX - 192, // width of menu
-        });
-      }
-      return next;
-    });
+    setMenuOpen(!menuOpen);    
   };
   const triggerEdit = (what: 'avatar' | 'banner') => {
     onEditProfile?.(what);
@@ -33,15 +20,8 @@ export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-card rounded-xl shadow-sm overflow-hidden border dark:border-border flex flex-col shrink-0">
-      <div className="h-28 md:h-40 bg-gray-100 relative shrink-0">
-        {user.coverUrl && (
-          <img
-            src={user.coverUrl}
-            alt="Cover"
-            className="w-full h-full object-cover opacity-90"
-          />
-        )}
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border dark:border-border flex flex-col shrink-0">      
+        <div className="h-28 md:h-40 bg-gradient-to-r from-[#fa8353] to-[#9256f4] relative shrink-0 rounded-t-xl">
         {user.tagline && (
           <div className="absolute right-4 md:right-6 bottom-3 md:bottom-4 max-w-[16rem] text-right">
             <p className="text-white/95 text-sm md:text-base font-medium drop-shadow-lg">
@@ -91,7 +71,7 @@ export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
                 </div>
               )}
             </div>
-            <div ref={buttonRef} className="relative flex flex-wrap gap-2 shrink-0">
+            <div className="relative flex flex-wrap gap-2 shrink-0">
               <Button variant="outline" size="sm" onClick={handleToggle}>
                 <Edit className="w-4 h-4 sm:mr-1" />Editar perfil
               </Button>
@@ -104,21 +84,17 @@ export function ProfileHeader({ user, onEditProfile }: ProfileHeaderProps) {
                 <ChevronDown className="w-4 h-4" />
               </Button>
 
+              {/* Menú desplegable posicionado con Tailwind */}
               {menuOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div style={menuStyle} className="z-50 w-48 bg-white dark:bg-card border dark:border-border rounded-xl shadow-lg">
+                  <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+                  {/* AQUÍ ESTÁ LA MAGIA: absolute, top-full, right-0 y mt-2 */}
+                  <div className="absolute top-full right-0 mt-2 z-40 w-48 bg-white dark:bg-card border dark:border-border rounded-xl shadow-lg overflow-hidden">
                     <button
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50 text-sm font-medium"
                       onClick={() => triggerEdit('avatar')}
                     >
                       Cambiar foto de perfil
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-muted/50"
-                      onClick={() => triggerEdit('banner')}
-                    >
-                      Cambiar foto de banner
                     </button>
                   </div>
                 </>

@@ -112,9 +112,6 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/profile'
     | '/'
-    | '/jobs'
-    | '/profile'
-    | '/'
     | '/posts/$postId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -122,9 +119,6 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/companies'
-    | '/jobs'
-    | '/profile'
-    | '/'
     | '/jobs'
     | '/profile'
     | '/'
