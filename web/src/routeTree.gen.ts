@@ -14,11 +14,13 @@ import { Route as privateRouteRouteImport } from './routes/(private)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as privateIndexRouteImport } from './routes/(private)/index'
 import { Route as privateProfileRouteImport } from './routes/(private)/profile'
+import { Route as privatePortfolioRouteImport } from './routes/(private)/portfolio'
 import { Route as privateJobsRouteImport } from './routes/(private)/jobs'
 import { Route as privateCompaniesRouteImport } from './routes/(private)/companies'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSigninRouteImport } from './routes/(auth)/signin'
 import { Route as privatePostsPostIdRouteImport } from './routes/(private)/posts.$postId'
+import { Route as privateProfileUserIdPortfolioRouteImport } from './routes/(private)/profile.$userId.portfolio'
 import { Route as privateEmpleosEmpleoIdAplicacionesRouteImport } from './routes/(private)/empleos.$empleoId.aplicaciones'
 
 const PingRoute = PingRouteImport.update({
@@ -42,6 +44,11 @@ const privateIndexRoute = privateIndexRouteImport.update({
 const privateProfileRoute = privateProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => privateRouteRoute,
+} as any)
+const privatePortfolioRoute = privatePortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => privateRouteRoute,
 } as any)
 const privateJobsRoute = privateJobsRouteImport.update({
@@ -69,6 +76,11 @@ const privatePostsPostIdRoute = privatePostsPostIdRouteImport.update({
   path: '/posts/$postId',
   getParentRoute: () => privateRouteRoute,
 } as any)
+const privateProfileUserIdPortfolioRoute =
+  privateProfileUserIdPortfolioRouteImport.update({
+    id: '/$userId/portfolio',
+    path: '/$userId/portfolio',
+    getParentRoute: () => privateProfileRoute,
 const privateEmpleosEmpleoIdAplicacionesRoute =
   privateEmpleosEmpleoIdAplicacionesRouteImport.update({
     id: '/empleos/$empleoId/aplicaciones',
@@ -82,9 +94,11 @@ export interface FileRoutesByFullPath {
   '/signup': typeof authSignupRoute
   '/companies': typeof privateCompaniesRoute
   '/jobs': typeof privateJobsRoute
-  '/profile': typeof privateProfileRoute
+  '/portfolio': typeof privatePortfolioRoute
+  '/profile': typeof privateProfileRouteWithChildren
   '/': typeof privateIndexRoute
   '/posts/$postId': typeof privatePostsPostIdRoute
+  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
 }
 export interface FileRoutesByTo {
@@ -93,9 +107,11 @@ export interface FileRoutesByTo {
   '/signup': typeof authSignupRoute
   '/companies': typeof privateCompaniesRoute
   '/jobs': typeof privateJobsRoute
-  '/profile': typeof privateProfileRoute
+  '/portfolio': typeof privatePortfolioRoute
+  '/profile': typeof privateProfileRouteWithChildren
   '/': typeof privateIndexRoute
   '/posts/$postId': typeof privatePostsPostIdRoute
+  '/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
 }
 export interface FileRoutesById {
@@ -107,9 +123,11 @@ export interface FileRoutesById {
   '/(auth)/signup': typeof authSignupRoute
   '/(private)/companies': typeof privateCompaniesRoute
   '/(private)/jobs': typeof privateJobsRoute
-  '/(private)/profile': typeof privateProfileRoute
+  '/(private)/portfolio': typeof privatePortfolioRoute
+  '/(private)/profile': typeof privateProfileRouteWithChildren
   '/(private)/': typeof privateIndexRoute
   '/(private)/posts/$postId': typeof privatePostsPostIdRoute
+  '/(private)/profile/$userId/portfolio': typeof privateProfileUserIdPortfolioRoute
   '/(private)/empleos/$empleoId/aplicaciones': typeof privateEmpleosEmpleoIdAplicacionesRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +138,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/companies'
     | '/jobs'
+    | '/portfolio'
+    | '/profile'
+    | '/'
+    | '/posts/$postId'
+    | '/profile/$userId/portfolio'
     | '/profile'
     | '/'
     | '/posts/$postId'
@@ -131,6 +154,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/companies'
     | '/jobs'
+    | '/portfolio'
+    | '/profile'
+    | '/'
+    | '/posts/$postId'
+    | '/profile/$userId/portfolio'
     | '/profile'
     | '/'
     | '/posts/$postId'
@@ -144,9 +172,11 @@ export interface FileRouteTypes {
     | '/(auth)/signup'
     | '/(private)/companies'
     | '/(private)/jobs'
+    | '/(private)/portfolio'
     | '/(private)/profile'
     | '/(private)/'
     | '/(private)/posts/$postId'
+    | '/(private)/profile/$userId/portfolio'
     | '/(private)/empleos/$empleoId/aplicaciones'
   fileRoutesById: FileRoutesById
 }
@@ -193,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privateProfileRouteImport
       parentRoute: typeof privateRouteRoute
     }
+    '/(private)/portfolio': {
+      id: '/(private)/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof privatePortfolioRouteImport
+      parentRoute: typeof privateRouteRoute
+    }
     '/(private)/jobs': {
       id: '/(private)/jobs'
       path: '/jobs'
@@ -228,6 +265,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof privatePostsPostIdRouteImport
       parentRoute: typeof privateRouteRoute
     }
+    '/(private)/profile/$userId/portfolio': {
+      id: '/(private)/profile/$userId/portfolio'
+      path: '/$userId/portfolio'
+      fullPath: '/profile/$userId/portfolio'
+      preLoaderRoute: typeof privateProfileUserIdPortfolioRouteImport
+      parentRoute: typeof privateProfileRoute
     '/(private)/empleos/$empleoId/aplicaciones': {
       id: '/(private)/empleos/$empleoId/aplicaciones'
       path: '/empleos/$empleoId/aplicaciones'
@@ -252,10 +295,23 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
   authRouteRouteChildren,
 )
 
+interface privateProfileRouteChildren {
+  privateProfileUserIdPortfolioRoute: typeof privateProfileUserIdPortfolioRoute
+}
+
+const privateProfileRouteChildren: privateProfileRouteChildren = {
+  privateProfileUserIdPortfolioRoute: privateProfileUserIdPortfolioRoute,
+}
+
+const privateProfileRouteWithChildren = privateProfileRoute._addFileChildren(
+  privateProfileRouteChildren,
+)
+
 interface privateRouteRouteChildren {
   privateCompaniesRoute: typeof privateCompaniesRoute
   privateJobsRoute: typeof privateJobsRoute
-  privateProfileRoute: typeof privateProfileRoute
+  privatePortfolioRoute: typeof privatePortfolioRoute
+  privateProfileRoute: typeof privateProfileRouteWithChildren
   privateIndexRoute: typeof privateIndexRoute
   privatePostsPostIdRoute: typeof privatePostsPostIdRoute
   privateEmpleosEmpleoIdAplicacionesRoute: typeof privateEmpleosEmpleoIdAplicacionesRoute
@@ -264,7 +320,8 @@ interface privateRouteRouteChildren {
 const privateRouteRouteChildren: privateRouteRouteChildren = {
   privateCompaniesRoute: privateCompaniesRoute,
   privateJobsRoute: privateJobsRoute,
-  privateProfileRoute: privateProfileRoute,
+  privatePortfolioRoute: privatePortfolioRoute,
+  privateProfileRoute: privateProfileRouteWithChildren,
   privateIndexRoute: privateIndexRoute,
   privatePostsPostIdRoute: privatePostsPostIdRoute,
   privateEmpleosEmpleoIdAplicacionesRoute:

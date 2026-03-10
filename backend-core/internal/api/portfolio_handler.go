@@ -25,6 +25,7 @@ func NewPortfolioHandler(ps core.PortfolioService, as core.AuthService) *Portfol
 }
 
 func (h *PortfolioHandler) Upload(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Recibiendo petición de subida...")
 	user, err := h.authService.UserFromHeader(r.Context(), r.Header)
 	if err == core.ErrUnauthorized {
 		utils.RespondError(w, http.StatusUnauthorized, "Authentication required")
